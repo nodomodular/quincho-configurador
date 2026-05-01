@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configura tu Quincho</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F4F1EA;
+  --surface: #FDFCF9;
+  --surface2: #EDE9E0;
+  --border: rgba(30,25,15,0.12);
+  --border-strong: rgba(30,25,15,0.28);
+  --text: #1C1810;
+  --muted: #7A7265;
+  --accent: #2B5C3F;
+  --accent-light: #E4EDE7;
+  --gold: #C4973A;
+  --gold-light: #FBF5E8;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100vh; }
+
+/* ── HEADER ── */
+header {
+  background: var(--text);
+  padding: 0 2.5rem;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.header-brand { display: flex; align-items: baseline; gap: 10px; }
+.header-brand-name { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 400; color: #F4F1EA; letter-spacing: -0.01em; }
+.header-brand-tag  { font-size: 11px; color: #5A5550; letter-spacing: 0.1em; text-transform: uppercase; }
+.header-step-label { font-size: 12px; color: #5A5550; letter-spacing: 0.04em; }
+
+/* ── PROGRESS ── */
+.progress-track { height: 3px; background: rgba(255,255,255,0.07); position: sticky; top: 64px; z-index: 99; }
+.progress-fill  { height: 100%; background: var(--gold); transition: width 0.5s cubic-bezier(0.4,0,0.2,1); width: 0%; }
+
+/* ── LAYOUT ── */
+.layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 67px); }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  background: var(--surface);
+  border-right: 0.5px solid var(--border);
+  padding: 2rem 0;
+  position: sticky; top: 67px;
+  height: calc(100vh - 67px);
+  overflow-y: auto;
+}
+.sidebar-step {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0.65rem 1.5rem;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: background 0.12s;
+}
+.sidebar-step:hover { background: var(--surface2); }
+.sidebar-step.active  { background: var(--accent-light); border-left-color: var(--accent); }
+.sidebar-step.done .step-num  { background: var(--accent); color: #fff; border-color: var(--accent); }
+.sidebar-step.active .step-num{ background: var(--text);   color: #fff; border-color: var(--text); }
+.step-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 500; color: var(--muted);
+  flex-shrink: 0; transition: all 0.2s;
+}
+.sidebar-label { font-size: 13px; color: var(--muted); }
+.sidebar-step.active .sidebar-label { color: var(--text); font-weight: 500; }
+.sidebar-step.done   .sidebar-label { color: var(--text); }
+.sidebar-divider { height: 0.5px; background: var(--border); margin: 0.75rem 1.5rem; }
+
+/* ── MAIN ── */
+main { padding: 2.5rem 3rem; max-width: 800px; }
+
+/* ── PANEL ── */
+.panel { display: none; }
+.panel.active { display: block; animation: fadeUp 0.22s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+.panel-eyebrow  { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 0.4rem; }
+.panel-title    { font-family: 'Fraunces', serif; font-size: 30px; font-weight: 400; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.5rem; }
+.panel-subtitle { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 2rem; max-width: 520px; }
+
+/* ── OPTION CARDS ── */
+.options-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 12px; margin-bottom: 2rem; }
+
+.opt-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+  cursor: pointer; position: relative;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+  user-select: none;
+}
+.opt-card:hover { border-color: var(--border-strong); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.07); }
+.opt-card.selected { border: 2px solid var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+
+.opt-img {
+  width: 100%; height: 128px;
+  background: var(--surface2);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; transition: background 0.18s;
+}
+.opt-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.opt-img svg { opacity: 0.22; transition: opacity 0.18s; }
+.opt-card.selected .opt-img { background: var(--accent-light); }
+.opt-card.selected .opt-img svg { opacity: 0.38; }
+.opt-card:hover:not(.selected) .opt-img { background: #E8E4DA; }
+
+.opt-body { padding: 11px 13px 13px; }
+.opt-name { font-size: 13px; font-weight: 500; line-height: 1.4; margin-bottom: 3px; }
+.opt-desc { font-size: 11px; color: var(--muted); line-height: 1.45; }
+
+.opt-check {
+  position: absolute; top: 8px; right: 8px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent);
+  display: none; align-items: center; justify-content: center;
+}
+.opt-card.selected .opt-check { display: flex; }
+.opt-check::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #fff; }
+
+/* ── SUBSECTION LABEL ── */
+.sub-label {
+  font-size: 11px; font-weight: 500; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--muted);
+  margin: 1.5rem 0 0.75rem;
+  padding-bottom: 0.4rem; border-bottom: 0.5px solid var(--border);
+}
+
+/* ── NAV BUTTONS ── */
+.nav-btns { display: flex; gap: 10px; margin-top: 0.5rem; }
+.btn-next {
+  background: var(--text); color: var(--bg);
+  border: none; padding: 10px 26px; border-radius: 6px;
+  font-size: 13px; font-family: 'DM Sans', sans-serif;
+  cursor: pointer; letter-spacing: 0.01em; transition: opacity 0.15s;
+}
+.btn-next:hover { opacity: 0.82; }
+.btn-back {
+  background: transparent; color: var(--muted);
+  border: 1px solid var(--border); padding: 10px 18px; border-radius: 6px;
+  font-size: 13px; font-family: 'DM Sans', sans-serif;
+  cursor: pointer; transition: all 0.15s;
+}
+.btn-back:hover { border-color: var(--border-strong); color: var(--text); }
+
+/* ── CONTACT PANEL ── */
+.contact-form { max-width: 420px; display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; }
+.form-field { display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 12px; font-weight: 500; color: var(--text); letter-spacing: 0.02em; }
+.form-input {
+  padding: 10px 12px; border: 1px solid var(--border-strong);
+  border-radius: 6px; font-size: 14px; font-family: 'DM Sans', sans-serif;
+  background: var(--surface); color: var(--text); outline: none;
+  transition: border-color 0.15s;
+}
+.form-input:focus { border-color: var(--accent); }
+.form-input.error { border-color: #8B2B2B; }
+.form-error-msg { font-size: 11px; color: #8B2B2B; display: none; }
+.form-error-msg.visible { display: block; }
+
+.price-reveal {
+  background: var(--text); border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.5rem; gap: 12px;
+}
+.price-reveal-left .pr-label { font-size: 13px; color: #9A9590; margin-bottom: 2px; }
+.price-reveal-left .pr-sub   { font-size: 11px; color: #5A5550; }
+.price-reveal-val {
+  font-family: 'DM Mono', monospace; font-size: 28px;
+  font-weight: 500; color: #F4F1EA; white-space: nowrap;
+}
+
+.btn-submit {
+  background: var(--accent); color: #fff;
+  border: none; padding: 12px 28px; border-radius: 6px;
+  font-size: 14px; font-family: 'DM Sans', sans-serif;
+  cursor: pointer; transition: opacity 0.15s; letter-spacing: 0.01em;
+}
+.btn-submit:hover { opacity: 0.85; }
+.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── SUCCESS PANEL ── */
+.success-panel {
+  display: none; flex-direction: column; align-items: center;
+  text-align: center; padding: 3rem 1rem;
+}
+.success-panel.active { display: flex; animation: fadeUp 0.3s ease; }
+.success-icon {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: var(--accent-light); display: flex; align-items: center;
+  justify-content: center; margin-bottom: 1.5rem;
+}
+.success-icon svg { stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.success-title { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 400; margin-bottom: 0.75rem; letter-spacing: -0.02em; }
+.success-sub { font-size: 14px; color: var(--muted); line-height: 1.6; max-width: 380px; }
+
+
+/* ── WELCOME PANEL ── */
+.welcome-panel {
+  max-width: 560px;
+}
+.welcome-steps-list {
+  display: flex; flex-direction: column; gap: 10px;
+  margin: 1.75rem 0 2rem;
+}
+.welcome-step-item {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: var(--surface); border: 0.5px solid var(--border);
+  border-radius: 8px; padding: 12px 14px;
+}
+.welcome-step-num {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--text); color: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 500; flex-shrink: 0; margin-top: 1px;
+}
+.welcome-step-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+.welcome-step-text strong { font-weight: 500; }
+.welcome-note {
+  font-size: 12px; color: var(--muted); line-height: 1.6;
+  background: var(--gold-light); border: 0.5px solid #D4C084;
+  border-radius: 7px; padding: 10px 14px; margin-bottom: 2rem;
+}
+
+/* ── RESPONSIVE ── */
+
+/* Tablet */
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 180px 1fr; }
+  main { padding: 2rem 2rem; }
+  .sidebar-label { font-size: 12px; }
+  .options-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  /* Header */
+  header { padding: 0 1.25rem; height: 56px; }
+  .header-brand-name { font-size: 15px; }
+  .header-brand-tag  { display: none; }
+  .header-step-label { font-size: 11px; }
+
+  /* Progress */
+  .progress-track { top: 56px; }
+
+  /* Layout: single column, no sidebar */
+  .layout { grid-template-columns: 1fr; min-height: auto; }
+  .sidebar { display: none; }
+
+  /* Main padding */
+  main { padding: 1.25rem 1rem 4rem; max-width: 100%; }
+
+  /* Typography */
+  .panel-eyebrow { font-size: 10px; }
+  .panel-title   { font-size: 22px; margin-bottom: 0.4rem; }
+  .panel-subtitle { font-size: 13px; margin-bottom: 1.5rem; }
+
+  /* Cards: 2 columns on mobile */
+  .options-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 1.5rem; }
+  .opt-img      { height: 100px; }
+  .opt-body     { padding: 9px 10px 11px; }
+  .opt-name     { font-size: 12px; }
+  .opt-desc     { font-size: 10px; }
+  .opt-check    { width: 18px; height: 18px; top: 6px; right: 6px; }
+  .opt-check::after { width: 6px; height: 6px; }
+
+  /* Sub label */
+  .sub-label { font-size: 10px; margin: 1.25rem 0 0.6rem; }
+
+  /* Nav buttons */
+  .nav-btns   { gap: 8px; margin-top: 0.75rem; }
+  .btn-next   { padding: 10px 20px; font-size: 13px; flex: 1; text-align: center; }
+  .btn-back   { padding: 10px 14px; font-size: 13px; }
+
+  /* Welcome */
+  .welcome-panel { max-width: 100%; }
+  .welcome-step-item { padding: 10px 12px; gap: 10px; }
+  .welcome-step-text { font-size: 12px; }
+  .welcome-note { font-size: 11px; }
+
+  /* Contact / price reveal */
+  .price-reveal { flex-direction: column; align-items: flex-start; gap: 8px; padding: 1rem 1.25rem; }
+  .price-reveal-val { font-size: 24px; }
+  .contact-form { max-width: 100%; }
+  .form-input   { font-size: 16px; } /* prevents iOS zoom on focus */
+  .form-error-msg { font-size: 11px; }
+
+  /* Submit button full width */
+  .btn-submit { width: 100%; padding: 13px; font-size: 14px; }
+  .btn-back#btn-back-contact { flex-shrink: 0; }
+
+  /* Success */
+  .success-panel { padding: 2.5rem 1rem; }
+  .success-title  { font-size: 22px; }
+  .success-sub    { font-size: 13px; }
+
+  /* Bottom safe area for notch phones */
+  main { padding-bottom: 5rem; }
+}
+
+/* Very small screens */
+@media (max-width: 360px) {
+  .options-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .opt-img { height: 85px; }
+  .panel-title { font-size: 20px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-brand">
+    <span class="header-brand-name">Quincho PM01</span>
+    <span class="header-brand-tag">Configurador</span>
+  </div>
+  <span class="header-step-label" id="hdr-step"></span>
+</header>
+
+<div class="progress-track">
+  <div class="progress-fill" id="progress-fill"></div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div id="sidebar-steps"></div>
+  </aside>
+  <main id="main-content">
+
+    <!-- Welcome panel — built in HTML so it shows instantly -->
+    <div class="panel welcome-panel active" id="panel-welcome">
+      <div class="panel-eyebrow">Bienvenido</div>
+      <div class="panel-title">Diseña tu quincho ideal</div>
+      <div class="panel-subtitle">Gracias por visitarnos. En los próximos minutos vas a poder armar tu quincho a tu medida y obtener un presupuesto en línea.</div>
+      <div class="welcome-steps-list">
+        <div class="welcome-step-item">
+          <div class="welcome-step-num">1</div>
+          <div class="welcome-step-text"><strong>Elige tus materiales</strong> — Recorrerás cada sección del quincho tomando decisiones: piso, exterior, ventanas, muebles y más.</div>
+        </div>
+        <div class="welcome-step-item">
+          <div class="welcome-step-num">2</div>
+          <div class="welcome-step-text"><strong>Ve el precio en tiempo real</strong> — Al terminar verás el precio total con todo incluido, sin sorpresas.</div>
+        </div>
+        <div class="welcome-step-item">
+          <div class="welcome-step-num">3</div>
+          <div class="welcome-step-text"><strong>Déjanos tus datos</strong> — Te contactamos en menos de 24 hrs para afinar los detalles y dar el siguiente paso.</div>
+        </div>
+      </div>
+      <div class="welcome-note">⏱ El proceso toma menos de 5 minutos. Puedes volver atrás en cualquier momento para cambiar una elección.</div>
+      <div class="nav-btns">
+        <button class="btn-next" id="btn-welcome-start">Comenzar →</button>
+      </div>
+    </div>
+
+    <!-- panels built by JS -->
+    <div class="success-panel" id="success-panel">
+      <div class="success-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="success-title">¡Todo listo!</div>
+      <div class="success-sub">Recibimos tu configuración. Nos contactaremos contigo en menos de 24 hrs para conversar sobre el presupuesto generado.</div>
+    </div>
+  </main>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   DATOS — generados desde quincho_config.xlsx
+   Edita el xlsx y regenera este bloque con Claude
+═══════════════════════════════════════════════ */
+const XLSX_DATA = [
+  // [orden, seccion, subseccion, nombre_opcion, descripcion, precio_base, imagen_url, visible, tipo]
+  [1,"Estructura","","Pilar 100x100x3","Pilar cuadrado acero",99030,"","no","fijo"],
+  [1,"Estructura","","Viga IPE200","Viga principal de acero",1163520,"","no","fijo"],
+  [1,"Estructura","","Perfil C 100x50x3","Perfil estructural",148200,"","no","fijo"],
+  [1,"Estructura","","Perfil C 80x40x3","Perfil estructural secundario",114024,"","no","fijo"],
+  [1,"Estructura","","Perfil U 100x50x2","Perfil U de refuerzo",16761,"","no","fijo"],
+  [1,"Estructura","","Soldadura + anticorrosivo","Insumos de unión y protección",44934,"","no","fijo"],
+  [2,"Tabiquería base","","Impermeabilización Igol Primer","Base impermeable piso",17945,"","no","fijo"],
+  [2,"Tabiquería base","","Lana vidrio 80mm piso","Aislación térmica piso",90396,"","no","fijo"],
+  [2,"Tabiquería base","","Piso vinílico calidad media","Cubierta de piso",411250,"","no","fijo"],
+  [2,"Tabiquería base","","Cámara de aire Pino 1x2","Separador muro",27060,"","no","fijo"],
+  [2,"Tabiquería base","","Membrana hidrófuga Tyvek muro","Barrera humedad muro",19370,"","no","fijo"],
+  [2,"Tabiquería base","","Lana vidrio 80mm muro","Aislación térmica muro",140503,"","no","fijo"],
+  [2,"Tabiquería base","","Membrana Tyvek cielo","Barrera humedad cielo",12462,"","no","fijo"],
+  [2,"Tabiquería base","","Lana vidrio 80mm cielo","Aislación térmica cielo",90396,"","no","fijo"],
+  [3,"Cubierta","","Zinc Acanalado Gris 0.5mm","Cubierta de techo",157480,"","no","fijo"],
+  [3,"Cubierta","","Solera Pino 2x4","Apoyo de cubierta",10380,"","no","fijo"],
+  [3,"Cubierta","","Tapacán Pino 2x6","Terminación borde techo",43482,"","no","fijo"],
+  [3,"Cubierta","","Estructura Zinc Pino 2x3","Soporte estructura zinc",34840,"","no","fijo"],
+  [4,"Electricidad","","Materiales Bticino Nobile Negra","Línea eléctrica completa",495400,"","no","fijo"],
+  [4,"Electricidad","","Mano de obra electricidad","Instalación eléctrica",400000,"","no","fijo"],
+  [5,"Artefactos","","Lavaplatos Teka BE 34.40","Lavaplatos acero inox",63017,"","no","fijo"],
+  [5,"Artefactos","","Grifería Teka IN 994 ECO","Grifería cuello recto",42008,"","no","fijo"],
+  [6,"Instalaciones sanitarias","","Materiales instalación sanitaria","Materiales sanitarios",120000,"","no","fijo"],
+  [7,"Mano de obra","","MO total (excl. electricidad)","Mano de obra general",1200000,"","no","fijo"],
+  [7,"Mano de obra","","Fijaciones y sellos","Tornillos, sellantes, etc.",100000,"","no","fijo"],
+  [7,"Mano de obra","","Fletes y escombros","Traslados y retiro de escombros",150000,"","no","fijo"],
+  [8,"Forros","","Forros ventanas","Terminación alrededor ventanas",20930,"","no","fijo"],
+  [8,"Forros","","Forros revestimiento exterior","Terminación bordes exterior",51350,"","no","fijo"],
+  [8,"Forros","","Esquineros","Remates de esquinas",13520,"","no","fijo"],
+  [10,"Piso","","Porcelanato café","Resistente y de fácil mantención",161356,"","si","variable"],
+  [10,"Piso","","Porcelanato negro","Look contemporáneo y elegante",245700,"","si","variable"],
+  [10,"Piso","","Vinílico 15mm","Calidez y confort al pisada",285870,"","si","variable"],
+  [10,"Piso","","Vinílico 18mm","Mayor resistencia y durabilidad",276770,"","si","variable"],
+  [10,"Piso","","Terciado 18mm","Máxima resistencia y naturalidad",304070,"","si","variable"],
+  [20,"Exterior","","Pino 1x6 vertical","Calidez natural, madera a la vista",315018,"","si","variable"],
+  [20,"Exterior","","Cuadro Negro 0.5mm","Look moderno y contemporáneo",594264,"","si","variable"],
+  [20,"Exterior","","Cuadro Negro premium","Acabado superior, más cobertura",770972,"","si","variable"],
+  [20,"Exterior","","Rectangular ARRATIA","Diseño arquitectónico diferenciado",541934,"","si","variable"],
+  [30,"Interior","","Volcanita 15mm","Limpio, listo para pintar",103235,"","si","variable"],
+  [30,"Interior","","Pino 1x6 horizontal","Madera a la vista, cálido y natural",278894,"","si","variable"],
+  [40,"Cielo","","Pino cepillado 1x5","Cálido y clásico",157940,"","si","variable"],
+  [40,"Cielo","","Pino machimbrado 3/4x5","Más prolijo, mejor terminación",190270,"","si","variable"],
+  [50,"Ventanas","","Aluminio corredera","Durabilidad y precio accesible",3887000,"","si","variable"],
+  [50,"Ventanas","","PVC corredera","Mejor aislación térmica",5500000,"","si","variable"],
+  [50,"Ventanas","","PVC abatible/proyectada","Máxima calidad y hermeticidad",6900325,"","si","variable"],
+  [60,"Muebles","","Melamina blanca + puertas color","Estilo moderno bicolor",1115600,"","si","variable"],
+  [60,"Muebles","","Melamina de color 18mm","Color único, diseño según plano",1247300,"","si","variable"],
+  [60,"Muebles","","TuEstilo melamina blanca","Funcional y económico",1250000,"","si","variable"],
+  [70,"Mesón","","Cuarzo normal","Resistente, neutro y elegante",1280000,"","si","variable"],
+  [70,"Mesón","","Cuarzo gris según plano","Diseño a medida, premium",1850000,"","si","variable"],
+  [80,"Parrilla","Tipo de parrilla","Parrilla Catalán Curicó","Clásica y funcional",250000,"","si","variable"],
+  [80,"Parrilla","Tipo de parrilla","Varvacoa 100x50cm Fierro","Mayor superficie de cocción",431990,"","si","variable"],
+  [80,"Parrilla","Mueble de parrilla","Mueble Ideal","Acero al carbono o inox",1500000,"","si","variable"],
+  [80,"Parrilla","Mueble de parrilla","Mueble El Herrero","Mayor calidad y robustez",2200000,"","si","variable"],
+];
+
+/* ═══════════════════════════════════════════════
+   MÁRGENES — ajusta acá
+═══════════════════════════════════════════════ */
+const M1 = 0.20;  // % utilidad sobre precio de venta
+const M2 = 0.10;  // % reserva post-venta sobre costo
+
+/* ═══════════════════════════════════════════════
+   GOOGLE SHEETS ENDPOINT
+   Pega aquí la URL de tu Google Apps Script
+═══════════════════════════════════════════════ */
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzUXDVWeLHBBOc3q6pHjzCcaJnqgTxOKAAqu8wnUvnd95WUiXZxCboHk3OiHUZkQLxp/exec';
+
+/* ═══════════════════════════════════════════════
+   PLACEHOLDER SVG
+═══════════════════════════════════════════════ */
+const PLACEHOLDER = `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"
+  stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="4" y="4" width="36" height="36" rx="3"/>
+  <circle cx="15" cy="15" r="4"/>
+  <path d="M4 30l10-10 8 8 6-6 12 12"/>
+</svg>`;
+
+/* ═══════════════════════════════════════════════
+   BUILD STEPS
+═══════════════════════════════════════════════ */
+function buildSteps() {
+  let fixedCost = 0;
+
+  // Sumar costos invisibles
+  XLSX_DATA.forEach(r => {
+    if (r[7] === 'no' && r[8] === 'fijo') fixedCost += Number(r[5]) || 0;
+  });
+
+  // Solo filas visibles, ordenadas
+  const visRows = XLSX_DATA
+    .filter(r => r[7] === 'si')
+    .sort((a, b) => Number(a[0]) - Number(b[0]));
+
+  // Agrupar por sección → subsección
+  const secMap = new Map();
+  visRows.forEach(r => {
+    const [orden, seccion, subseccion, nombre, desc, precio, img, , tipo] = r;
+    const secKey = String(seccion).trim();
+    if (!secMap.has(secKey)) secMap.set(secKey, { orden: Number(orden), subs: new Map() });
+    const subKey = String(subseccion || '').trim() || '__';
+    const sec = secMap.get(secKey);
+    if (!sec.subs.has(subKey)) sec.subs.set(subKey, { label: subKey === '__' ? '' : subKey, tipo: String(tipo), options: [] });
+    sec.subs.get(subKey).options.push({
+      name: String(nombre || ''),
+      desc: String(desc  || ''),
+      img:  String(img   || ''),
+      val:  Number(precio) || 0,
+    });
+  });
+
+  const steps = [];
+  let n = 1;
+  const total = secMap.size;
+
+  secMap.forEach((sec, secName) => {
+    const subsArr = [...sec.subs.values()];
+    const isSingle = subsArr.length === 1 && subsArr[0].label === '';
+    const id = 'step_' + secName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+
+    if (isSingle) {
+      steps.push({
+        id, label: secName,
+        eyebrow: `Paso ${n} de ${total}`,
+        title: secName,
+        type: 'single',
+        locked: subsArr[0].tipo === 'fijo',
+        key: id,
+        options: subsArr[0].options,
+      });
+    } else {
+      steps.push({
+        id, label: secName,
+        eyebrow: `Paso ${n} de ${total}`,
+        title: secName,
+        type: 'multi',
+        locked: subsArr[0].tipo === 'fijo',
+        subs: subsArr.map(sub => ({
+          label: sub.label,
+          key: id + '_' + sub.label.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+          locked: sub.tipo === 'fijo',
+          options: sub.options,
+        })),
+      });
+    }
+    n++;
+  });
+
+  return { fixedCost, steps };
+}
+
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+const { fixedCost: FIXED_COST, steps: STEPS } = buildSteps();
+let sel = {};
+let currentStep = 0;
+const TOTAL_VIEWS = STEPS.length + 1; // steps + contact
+
+function calcCP() {
+  let cp = FIXED_COST;
+  STEPS.forEach(s => {
+    if (s.type === 'single') {
+      if (s.locked) cp += s.options[0]?.val || 0;
+      else if (sel[s.key] !== undefined) cp += s.options[sel[s.key]].val;
+    } else {
+      s.subs.forEach(sub => {
+        if (sub.locked) cp += sub.options[0]?.val || 0;
+        else if (sel[sub.key] !== undefined) cp += sub.options[sel[sub.key]].val;
+      });
+    }
+  });
+  return cp;
+}
+
+function calcGT() {
+  const cp = calcCP();
+  return Math.round((cp * (1 + M2)) / (1 - M1));
+}
+
+function fmt(n) {
+  return '$' + Math.round(n).toLocaleString('es-CL');
+}
+
+function stepDone(i) {
+  const s = STEPS[i];
+  if (s.locked) return true;
+  if (s.type === 'single') return sel[s.key] !== undefined;
+  return s.subs.every(sub => sub.locked || sel[sub.key] !== undefined);
+}
+
+function countDone() {
+  return STEPS.filter((_, i) => stepDone(i)).length;
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER HEADER
+═══════════════════════════════════════════════ */
+function updateHeader() {
+  const el = document.getElementById('hdr-step');
+  if (currentStep === -1) {
+    el.textContent = '';
+  } else if (currentStep < STEPS.length) {
+    el.textContent = `Paso ${currentStep + 1} de ${STEPS.length}`;
+  } else {
+    el.textContent = 'Finalizar';
+  }
+  const pct = Math.round((countDone() / STEPS.length) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER SIDEBAR
+═══════════════════════════════════════════════ */
+function renderSidebar() {
+  const el = document.getElementById('sidebar-steps');
+  el.innerHTML = '';
+
+  STEPS.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.className = 'sidebar-step'
+      + (currentStep >= 0 && i === currentStep ? ' active' : '')
+      + (stepDone(i) ? ' done' : '');
+
+    const num = document.createElement('div');
+    num.className = 'step-num';
+    num.textContent = stepDone(i) ? '✓' : (i + 1);
+
+    const lbl = document.createElement('span');
+    lbl.className = 'sidebar-label';
+    lbl.textContent = s.label;
+
+    div.append(num, lbl);
+    div.addEventListener('click', () => { currentStep = i; renderAll(); });
+    el.appendChild(div);
+  });
+
+  // Divider + Finalizar
+  const div2 = document.createElement('div');
+  div2.className = 'sidebar-divider';
+  el.appendChild(div2);
+
+  const fin = document.createElement('div');
+  fin.className = 'sidebar-step' + (currentStep === STEPS.length ? ' active' : '');
+  const finNum = document.createElement('div');
+  finNum.className = 'step-num';
+  finNum.textContent = '→';
+  const finLbl = document.createElement('span');
+  finLbl.className = 'sidebar-label';
+  finLbl.textContent = 'Finalizar';
+  fin.append(finNum, finLbl);
+  fin.addEventListener('click', () => { currentStep = STEPS.length; renderAll(); });
+  el.appendChild(fin);
+}
+
+/* ═══════════════════════════════════════════════
+   BUILD OPTION CARDS
+═══════════════════════════════════════════════ */
+function buildGrid(options, key, locked, onChange) {
+  if (locked && sel[key] === undefined) sel[key] = 0;
+
+  const grid = document.createElement('div');
+  grid.className = 'options-grid';
+
+  options.forEach((opt, i) => {
+    const isSelected = locked ? i === 0 : sel[key] === i;
+    const card = document.createElement('div');
+    card.className = 'opt-card' + (isSelected ? ' selected' : '');
+
+    const imgHTML = opt.img
+      ? `<img src="${opt.img}" alt="${opt.name}" loading="lazy" onerror="this.parentElement.innerHTML='${PLACEHOLDER.replace(/"/g,"'")}'"/>`
+      : PLACEHOLDER;
+
+    card.innerHTML = `
+      <div class="opt-img">${imgHTML}</div>
+      <div class="opt-body">
+        <div class="opt-name">${opt.name}</div>
+        <div class="opt-desc">${opt.desc}</div>
+      </div>
+      <div class="opt-check"></div>`;
+
+    if (!locked) {
+      card.addEventListener('click', () => { sel[key] = i; onChange(); });
+    }
+    grid.appendChild(card);
+  });
+  return grid;
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER STEP PANELS
+═══════════════════════════════════════════════ */
+function renderSteps() {
+  // Remove only JS-built panels, keep #panel-welcome and #success-panel
+  document.querySelectorAll('.panel:not(#panel-welcome):not(.success-panel)').forEach(p => p.remove());
+  const main = document.getElementById('main-content');
+  const success = document.getElementById('success-panel');
+
+  STEPS.forEach((step, i) => {
+    const panel = document.createElement('div');
+    panel.className = 'panel' + (i === currentStep ? ' active' : '');
+    panel.id = 'panel-' + step.id;
+
+    panel.innerHTML = `
+      <div class="panel-eyebrow">${step.eyebrow}</div>
+      <div class="panel-title">${step.title}</div>
+      <div class="panel-subtitle">${step.locked
+        ? 'Este elemento está incluido en tu quincho.'
+        : 'Elige la opción que mejor se adapte a lo que buscas.'}</div>`;
+
+    if (step.type === 'single') {
+      panel.appendChild(buildGrid(step.options, step.key, step.locked, () => renderAll()));
+    } else {
+      step.subs.forEach(sub => {
+        const lbl = document.createElement('div');
+        lbl.className = 'sub-label';
+        lbl.textContent = sub.label;
+        panel.appendChild(lbl);
+        panel.appendChild(buildGrid(sub.options, sub.key, sub.locked, () => renderAll()));
+      });
+    }
+
+    const btns = document.createElement('div');
+    btns.className = 'nav-btns';
+    if (i > 0) {
+      const back = document.createElement('button');
+      back.className = 'btn-back'; back.textContent = '← Atrás';
+      back.addEventListener('click', () => { currentStep = i - 1; renderAll(); });
+      btns.appendChild(back);
+    }
+    const next = document.createElement('button');
+    next.className = 'btn-next';
+    next.textContent = i === STEPS.length - 1 ? 'Finalizar →' : 'Siguiente →';
+    next.addEventListener('click', () => { currentStep = i + 1; renderAll(); });
+    btns.appendChild(next);
+    panel.appendChild(btns);
+
+    main.insertBefore(panel, success);
+  });
+
+  // Contact panel
+  renderContactPanel(main, success);
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER CONTACT PANEL
+═══════════════════════════════════════════════ */
+function renderContactPanel(main, success) {
+  let panel = document.getElementById('panel-contact');
+  if (panel) panel.remove();
+
+  panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.id = 'panel-contact';
+
+  const gt = calcGT();
+  const allDone = STEPS.every((_, i) => stepDone(i));
+
+  panel.innerHTML = `
+    <div class="panel-eyebrow">Último paso</div>
+    <div class="panel-title">Finaliza tu configuración</div>
+    <div class="panel-subtitle">Tu quincho está listo. Déjanos tus datos y te enviamos el presupuesto detallado.</div>
+
+    <div class="price-reveal">
+      <div class="price-reveal-left">
+        <div class="pr-label">Precio estimado de tu quincho</div>
+        <div class="pr-sub">Incluye materiales, mano de obra y terminaciones</div>
+      </div>
+      <div class="price-reveal-val">${fmt(gt)}</div>
+    </div>
+
+    ${!allDone ? `<div style="background:var(--gold-light);border:0.5px solid #D4C084;border-radius:7px;padding:9px 13px;font-size:12px;color:#7A5C1A;margin-bottom:1.25rem;">
+      Tienes pasos sin completar — el precio es estimado con las elecciones actuales.
+    </div>` : ''}
+
+    <div class="contact-form" id="contact-form">
+      <div class="form-field">
+        <label class="form-label">Nombre y apellido</label>
+        <input class="form-input" id="f-nombre" type="text" placeholder="Ej: Juan Pérez" autocomplete="name">
+        <span class="form-error-msg" id="e-nombre">Ingresa tu nombre completo</span>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Correo electrónico</label>
+        <input class="form-input" id="f-email" type="email" placeholder="juan@correo.com" autocomplete="email">
+        <span class="form-error-msg" id="e-email">Ingresa un correo válido</span>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Teléfono de contacto</label>
+        <input class="form-input" id="f-telefono" type="tel" placeholder="+56 9 1234 5678 (8 dígitos)" autocomplete="tel">
+        <span class="form-error-msg" id="e-telefono">Ingresa un teléfono chileno válido: +569 seguido de 8 dígitos (ej: +56912345678)</span>
+      </div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="btn-back" id="btn-back-contact">← Atrás</button>
+      <button class="btn-submit" id="btn-submit">Enviar presupuesto →</button>
+    </div>
+    <div id="submit-error" style="font-size:12px;color:#8B2B2B;margin-top:0.75rem;display:none;"></div>`;
+
+  main.insertBefore(panel, success);
+
+  document.getElementById('btn-back-contact')?.addEventListener('click', () => {
+    currentStep = STEPS.length - 1; renderAll();
+  });
+
+  document.getElementById('btn-submit')?.addEventListener('click', handleSubmit);
+}
+
+/* ═══════════════════════════════════════════════
+   SUBMIT
+═══════════════════════════════════════════════ */
+function handleSubmit() {
+  const nombre   = document.getElementById('f-nombre')?.value.trim()   || '';
+  const email    = document.getElementById('f-email')?.value.trim()    || '';
+  const telefono = document.getElementById('f-telefono')?.value.trim() || '';
+
+  // Validate
+  let valid = true;
+  const setErr = (id, errId, show) => {
+    document.getElementById(id)?.classList.toggle('error', show);
+    const e = document.getElementById(errId);
+    if (e) e.className = 'form-error-msg' + (show ? ' visible' : '');
+    if (show) valid = false;
+  };
+  // Phone: accept +569XXXXXXXX or 9XXXXXXXX (8 digits after 9)
+  const phoneClean = telefono.replace(/\s+/g, '');
+  const phoneValid = /^(\+569|569|9)\d{8}$/.test(phoneClean);
+  setErr('f-nombre',   'e-nombre',   !nombre);
+  setErr('f-email',    'e-email',    !email || !/^[^@]+@[^@]+\.[^@]+$/.test(email));
+  setErr('f-telefono', 'e-telefono', !phoneValid);
+  if (!valid) return;
+
+  // Build selections summary — each entry has name + price
+  const elecciones = {};
+  STEPS.forEach(s => {
+    if (s.type === 'single') {
+      const idx = s.locked ? 0 : sel[s.key];
+      if (idx !== undefined) {
+        elecciones[s.label] = { nombre: s.options[idx].name, precio: s.options[idx].val };
+      }
+    } else {
+      s.subs.forEach(sub => {
+        const idx = sub.locked ? 0 : sel[sub.key];
+        if (idx !== undefined) {
+          elecciones[sub.label] = { nombre: sub.options[idx].name, precio: sub.options[idx].val };
+        }
+      });
+    }
+  });
+
+  const payload = {
+    nombre, email, telefono,
+    precio_total: calcGT(),
+    elecciones: JSON.stringify(elecciones),
+    fecha: new Date().toLocaleString('es-CL'),
+  };
+
+  const btn = document.getElementById('btn-submit');
+  const errEl = document.getElementById('submit-error');
+  btn.disabled = true;
+  btn.textContent = 'Enviando…';
+  errEl.style.display = 'none';
+
+  if (!SHEETS_URL) {
+    // No endpoint configured → show success anyway (dev mode)
+    console.log('Payload (sin endpoint configurado):', payload);
+    showSuccess();
+    return;
+  }
+
+  fetch(SHEETS_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  .then(() => showSuccess())
+  .catch(() => {
+    btn.disabled = false;
+    btn.textContent = 'Enviar presupuesto →';
+    errEl.textContent = 'Hubo un problema al enviar. Intenta de nuevo.';
+    errEl.style.display = 'block';
+  });
+}
+
+function showSuccess() {
+  document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+  document.getElementById('sidebar-steps').style.opacity = '0.35';
+  document.getElementById('success-panel').classList.add('active');
+  document.getElementById('hdr-step').textContent = '';
+  document.getElementById('progress-fill').style.width = '100%';
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER ALL
+═══════════════════════════════════════════════ */
+function renderAll() {
+  renderSidebar();
+  renderSteps();
+
+  // Panels: [welcome, step0, step1, ..., stepN-1, contact]
+  // currentStep === -1 → welcome; 0..N-1 → steps; N → contact
+  const panels = document.querySelectorAll('.panel');
+  panels.forEach(p => p.classList.remove('active'));
+  if (currentStep === -1) {
+    document.getElementById('panel-welcome')?.classList.add('active');
+  } else if (currentStep >= 0 && currentStep < STEPS.length) {
+    document.getElementById('panel-' + STEPS[currentStep].id)?.classList.add('active');
+  } else if (currentStep === STEPS.length) {
+    document.getElementById('panel-contact')?.classList.add('active');
+  }
+
+  updateHeader();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Build welcome panel once — outside renderSteps to preserve event listener
+// Init — attach welcome button and start on welcome screen
+currentStep = -1;
+document.getElementById('btn-welcome-start').addEventListener('click', () => {
+  currentStep = 0;
+  renderAll();
+});
+renderAll();
+</script>
+</body>
+</html>
