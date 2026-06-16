@@ -135,28 +135,129 @@ header {
 }
 .sidebar-model-label {
   font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;
-  color: var(--muted); padding: 0 1.5rem; margin-bottom: 1rem;
+  color: var(--muted); padding: 0 1.5rem 0.75rem;
 }
+
+/* ── TIMELINE ── */
+.timeline {
+  position: relative;
+  padding: 0 1.5rem;
+  display: flex; flex-direction: column;
+}
+
+/* Vertical line connecting all steps */
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: calc(1.5rem + 10px);
+  top: 10px;
+  bottom: 10px;
+  width: 1.5px;
+  background: var(--border);
+  z-index: 0;
+}
+
 .sidebar-step {
-  display: flex; align-items: center; gap: 10px;
-  padding: 0.65rem 1.5rem; cursor: pointer;
-  border-left: 2px solid transparent; transition: background 0.12s;
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 0.45rem 0;
+  cursor: pointer;
+  position: relative; z-index: 1;
+  transition: opacity 0.15s;
 }
-.sidebar-step:hover { background: var(--surface2); }
-.sidebar-step.active  { background: var(--accent-light); border-left-color: var(--accent); }
-.sidebar-step.done .step-num  { background: var(--accent); color: #fff; border-color: var(--accent); }
-.sidebar-step.active .step-num{ background: var(--text);   color: #fff; border-color: var(--text); }
+.sidebar-step:hover .sidebar-label { color: var(--text); }
+
+/* Node dot */
 .step-num {
   width: 22px; height: 22px; border-radius: 50%;
-  border: 1px solid var(--border-strong);
+  border: 2px solid var(--border-strong);
+  background: var(--surface);
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 500; color: var(--muted);
-  flex-shrink: 0; transition: all 0.2s;
+  font-size: 10px; font-weight: 600; color: var(--muted);
+  flex-shrink: 0;
+  transition: all 0.25s;
+  position: relative; z-index: 2;
 }
-.sidebar-label { font-size: 13px; color: var(--muted); }
-.sidebar-step.active .sidebar-label { color: var(--text); font-weight: 500; }
+
+/* Done: filled accent dot */
+.sidebar-step.done .step-num {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+/* Active: filled dark */
+.sidebar-step.active .step-num {
+  background: var(--text);
+  border-color: var(--text);
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(28,24,16,0.08);
+}
+
+/* Label */
+.sidebar-label {
+  font-size: 12.5px; color: var(--muted);
+  line-height: 1.3; padding-top: 3px;
+  transition: color 0.15s;
+}
+.sidebar-step.active .sidebar-label { color: var(--text); font-weight: 600; }
 .sidebar-step.done   .sidebar-label { color: var(--text); }
-.sidebar-divider { height: 0.5px; background: var(--border); margin: 0.75rem 1.5rem; }
+
+/* Line segment — filled when done */
+.sidebar-step.done .step-num::after,
+.sidebar-step.active .step-num::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%; transform: translateX(-50%);
+  width: 1.5px;
+  height: 200%;
+  background: var(--accent);
+  z-index: 1;
+}
+.sidebar-step:last-child .step-num::after { display: none; }
+
+/* Locked step */
+.sidebar-step.locked { opacity: 0.35; cursor: not-allowed; }
+.sidebar-step.locked:hover .sidebar-label { color: var(--muted); }
+.sidebar-step.locked .step-num { border-style: dashed; }
+.sidebar-fin.locked { opacity: 0.35; cursor: not-allowed; }
+.sidebar-fin.locked:hover .sidebar-fin-label { color: var(--muted); }
+.sidebar-fin.locked .sidebar-fin-icon { border-style: dashed; }
+
+/* Order message toast */
+.order-toast {
+  position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+  background: var(--text); color: #F4F1EA;
+  padding: 14px 20px; border-radius: 10px;
+  font-size: 13px; line-height: 1.5; max-width: 340px; text-align: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  z-index: 999; opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+.order-toast.visible { opacity: 1; }
+
+/* Finalizar separator */
+.sidebar-divider { height: 0.5px; background: var(--border); margin: 0.75rem 0; }
+.sidebar-fin {
+  display: flex; align-items: center; gap: 12px;
+  padding: 0.45rem 0; cursor: pointer;
+}
+.sidebar-fin-icon {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 1.5px dashed var(--border-strong);
+  background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: var(--muted); flex-shrink: 0;
+  transition: all 0.2s;
+}
+.sidebar-fin.active .sidebar-fin-icon {
+  background: var(--gold); border-color: var(--gold); color: #fff;
+}
+.sidebar-fin-label { font-size: 12.5px; color: var(--muted); padding-top: 3px; }
+.sidebar-fin.active .sidebar-fin-label { color: var(--text); font-weight: 600; }
+.sidebar-fin:hover .sidebar-fin-label { color: var(--text); }
 
 /* ── MAIN ── */
 main { padding: 2.5rem 3rem; max-width: 800px; }
@@ -455,318 +556,516 @@ main { padding: 2.5rem 3rem; max-width: 800px; }
 </div>
 
 <script>
-/* ═══════════════════════════════
+/* ═══════════════════════════════════════
    CONFIGURACIÓN
-═══════════════════════════════ */
+═══════════════════════════════════════ */
 const M1 = 0.20;
 const M2 = 0.10;
+const PRECIO_BASE_PRO = 0; // ← precio base del modelo Pro (estructura, MO, etc.)
 const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzUXDVWeLHBBOc3q6pHjzCcaJnqgTxOKAAqu8wnUvnd95WUiXZxCboHk3OiHUZkQLxp/exec';
 
-/* ═══════════════════════════════
-   MODELOS
-   Por ahora los 3 usan los mismos datos.
-   Cuando tengas datos distintos por modelo,
-   reemplaza XLSX_DATA dentro de cada modelo.
-═══════════════════════════════ */
-const BASE_DATA = [
-  [1,"Estructura","","Pilar 100x100x3","Pilar cuadrado acero",99030,"","no","fijo"],
-  [1,"Estructura","","Viga IPE200","Viga principal de acero",1163520,"","no","fijo"],
-  [1,"Estructura","","Perfil C 100x50x3","Perfil estructural",148200,"","no","fijo"],
-  [1,"Estructura","","Perfil C 80x40x3","Perfil estructural secundario",114024,"","no","fijo"],
-  [1,"Estructura","","Perfil U 100x50x2","Perfil U de refuerzo",16761,"","no","fijo"],
-  [1,"Estructura","","Soldadura + anticorrosivo","Insumos de unión y protección",44934,"","no","fijo"],
-  [2,"Tabiquería base","","Impermeabilización Igol Primer","Base impermeable piso",17945,"","no","fijo"],
-  [2,"Tabiquería base","","Lana vidrio 80mm piso","Aislación térmica piso",90396,"","no","fijo"],
-  [2,"Tabiquería base","","Piso vinílico calidad media","Cubierta de piso",411250,"","no","fijo"],
-  [2,"Tabiquería base","","Cámara de aire Pino 1x2","Separador muro",27060,"","no","fijo"],
-  [2,"Tabiquería base","","Membrana hidrófuga Tyvek muro","Barrera humedad muro",19370,"","no","fijo"],
-  [2,"Tabiquería base","","Lana vidrio 80mm muro","Aislación térmica muro",140503,"","no","fijo"],
-  [2,"Tabiquería base","","Membrana Tyvek cielo","Barrera humedad cielo",12462,"","no","fijo"],
-  [2,"Tabiquería base","","Lana vidrio 80mm cielo","Aislación térmica cielo",90396,"","no","fijo"],
-  [3,"Cubierta","","Zinc Acanalado Gris 0.5mm","Cubierta de techo",157480,"","no","fijo"],
-  [3,"Cubierta","","Solera Pino 2x4","Apoyo de cubierta",10380,"","no","fijo"],
-  [3,"Cubierta","","Tapacán Pino 2x6","Terminación borde techo",43482,"","no","fijo"],
-  [3,"Cubierta","","Estructura Zinc Pino 2x3","Soporte estructura zinc",34840,"","no","fijo"],
-  [4,"Electricidad","","Materiales Bticino Nobile Negra","Línea eléctrica completa",495400,"","no","fijo"],
-  [4,"Electricidad","","Mano de obra electricidad","Instalación eléctrica",400000,"","no","fijo"],
-  [5,"Artefactos","","Lavaplatos Teka BE 34.40","Lavaplatos acero inox",63017,"","no","fijo"],
-  [5,"Artefactos","","Grifería Teka IN 994 ECO","Grifería cuello recto",42008,"","no","fijo"],
-  [6,"Instalaciones sanitarias","","Materiales instalación sanitaria","Materiales sanitarios",120000,"","no","fijo"],
-  [7,"Mano de obra","","MO total (excl. electricidad)","Mano de obra general",1200000,"","no","fijo"],
-  [7,"Mano de obra","","Fijaciones y sellos","Tornillos, sellantes, etc.",100000,"","no","fijo"],
-  [7,"Mano de obra","","Fletes y escombros","Traslados y retiro de escombros",150000,"","no","fijo"],
-  [8,"Forros","","Forros ventanas","Terminación alrededor ventanas",20930,"","no","fijo"],
-  [8,"Forros","","Forros revestimiento exterior","Terminación bordes exterior",51350,"","no","fijo"],
-  [8,"Forros","","Esquineros","Remates de esquinas",13520,"","no","fijo"],
-  [10,"Piso","","Porcelanato café","Resistente y de fácil mantención",161356,"","si","variable"],
-  [10,"Piso","","Porcelanato negro","Look contemporáneo y elegante",245700,"","si","variable"],
-  [10,"Piso","","Vinílico 15mm","Calidez y confort al pisada",285870,"","si","variable"],
-  [10,"Piso","","Vinílico 18mm","Mayor resistencia y durabilidad",276770,"","si","variable"],
-  [10,"Piso","","Terciado 18mm","Máxima resistencia y naturalidad",304070,"","si","variable"],
-  [20,"Exterior","","Pino 1x6 vertical","Calidez natural, madera a la vista",315018,"","si","variable"],
-  [20,"Exterior","","Cuadro Negro 0.5mm","Look moderno y contemporáneo",594264,"","si","variable"],
-  [20,"Exterior","","Cuadro Negro premium","Acabado superior, más cobertura",770972,"","si","variable"],
-  [20,"Exterior","","Rectangular ARRATIA","Diseño arquitectónico diferenciado",541934,"","si","variable"],
-  [30,"Interior","","Volcanita 15mm","Limpio, listo para pintar",103235,"","si","variable"],
-  [30,"Interior","","Pino 1x6 horizontal","Madera a la vista, cálido y natural",278894,"","si","variable"],
-  [40,"Cielo","","Pino cepillado 1x5","Cálido y clásico",157940,"","si","variable"],
-  [40,"Cielo","","Pino machimbrado 3/4x5","Más prolijo, mejor terminación",190270,"","si","variable"],
-  [50,"Ventanas","","Aluminio corredera","Durabilidad y precio accesible",3887000,"","si","variable"],
-  [50,"Ventanas","","PVC corredera","Mejor aislación térmica",5500000,"","si","variable"],
-  [50,"Ventanas","","PVC abatible/proyectada","Máxima calidad y hermeticidad",6900325,"","si","variable"],
-  [60,"Muebles","","Melamina blanca + puertas color","Estilo moderno bicolor",1115600,"","si","variable"],
-  [60,"Muebles","","Melamina de color 18mm","Color único, diseño según plano",1247300,"","si","variable"],
-  [60,"Muebles","","TuEstilo melamina blanca","Funcional y económico",1250000,"","si","variable"],
-  [70,"Mesón","","Cuarzo normal","Resistente, neutro y elegante",1280000,"","si","variable"],
-  [70,"Mesón","","Cuarzo gris según plano","Diseño a medida, premium",1850000,"","si","variable"],
-  [80,"Parrilla","Tipo de parrilla","Parrilla Catalán Curicó","Clásica y funcional",250000,"","si","variable"],
-  [80,"Parrilla","Tipo de parrilla","Varvacoa 100x50cm Fierro","Mayor superficie de cocción",431990,"","si","variable"],
-  [80,"Parrilla","Mueble de parrilla","Mueble Ideal","Acero al carbono o inox",1500000,"","si","variable"],
-  [80,"Parrilla","Mueble de parrilla","Mueble El Herrero","Mayor calidad y robustez",2200000,"","si","variable"],
+/* ═══════════════════════════════════════
+   DATOS PRO — extraídos del Excel
+═══════════════════════════════════════ */
+const PRO_STEPS = [
+  {
+    num: 1, concepto: 'Piso', tipo: 'simple',
+    titulo: '¿Qué tipo de piso?',
+    subtitulo: 'Elige el material y el color. El piso define la calidez y durabilidad de tu quincho.',
+    opciones: [
+      { material: 'Vinílico', colors: [{ color: 'Blanco', precio: 1000 }, { color: 'Negro', precio: 2000 }] },
+      { material: 'Porcelanato', colors: [{ color: 'Rojo', precio: 3000 }, { color: 'Verde', precio: 4000 }] },
+    ]
+  },
+  {
+    num: 2, concepto: 'Cielo', tipo: 'simple',
+    titulo: '¿Qué tipo de cielo?',
+    subtitulo: 'El cielo interior define la atmósfera del espacio.',
+    opciones: [
+      { material: 'WPC Ranurado', colors: [{ color: 'Café', precio: 5000 }, { color: 'Negro', precio: 6000 }] },
+      { material: 'Pino Machimbrado', colors: [{ color: 'Negro', precio: 7000 }, { color: 'Blanco', precio: 8000 }] },
+      { material: 'Volcanita', colors: [{ color: 'Rojo', precio: 9000 }, { color: 'Verde', precio: 10000 }] },
+    ]
+  },
+  {
+    num: 3, concepto: 'Muro interior', tipo: 'simple',
+    titulo: '¿Qué revestimiento interior?',
+    subtitulo: 'Los muros interiores enmarcan el ambiente de tu quincho.',
+    opciones: [
+      { material: 'WPC Ranurado Extruido', colors: [{ color: 'Blanco', precio: 11000 }, { color: 'Gris', precio: 12000 }] },
+      { material: 'Pino Horizontal', colors: [{ color: 'Café', precio: 13000 }, { color: 'Negro', precio: 14000 }] },
+      { material: 'Volcanita', colors: [{ color: 'Rojo', precio: 15000 }, { color: 'Verde', precio: 16000 }] },
+      { material: 'WPC Tabla Extruido', colors: [{ color: 'Café', precio: 19000 }, { color: 'Negro', precio: 20000 }] },
+    ]
+  },
+  {
+    num: 4, concepto: 'Muro exterior', tipo: 'simple',
+    titulo: '¿Qué revestimiento exterior?',
+    subtitulo: 'El exterior define el look principal del quincho y su resistencia al clima.',
+    opciones: [
+      { material: 'WPC Ranurado Coextruido', colors: [{ color: 'Blanco', precio: 17000 }, { color: 'Gris', precio: 18000 }] },
+      { material: 'Metálico', colors: [{ color: 'Negro', precio: 21000 }, { color: 'Gris', precio: 22000 }] },
+      { material: 'Pino Horizontal', colors: [{ color: 'Café', precio: 23000 }, { color: 'Beige', precio: 24000 }] },
+    ]
+  },
+  {
+    num: 5, concepto: 'Ventana lateral', tipo: 'simple',
+    titulo: '¿Con o sin ventana lateral?',
+    subtitulo: 'La ventana lateral aporta luminosidad y ventilación al espacio.',
+    opciones: [
+      { material: 'Con ventana', colors: [{ color: null, precio: 25000 }] },
+      { material: 'Sin ventana', colors: [{ color: null, precio: 26000 }] },
+    ]
+  },
+  {
+    num: 6, concepto: 'Mueblería', tipo: 'muebleria',
+    subtitulo: 'Personaliza tu cocina paso a paso.',
+    distribuciones: ['en U', 'En L', 'en I'],
+    electros: ['0 electrodomésticos', '1 electrodoméstico', '2 electrodomésticos'],
+    cubiertas: ['Cuarzo', 'Porcelanato'],
+    colores_cubierta: ['Blanco', 'Color'],
+    colores_melamina: ['Roja', 'Verde'],
+    lookup: {
+      'en U|0|cuarzo|blanco|roja': 27000, 'en U|0|cuarzo|blanco|verde': 28000,
+      'en U|0|cuarzo|color|roja': 29000,  'en U|0|cuarzo|color|verde': 30000,
+      'en U|0|porcelanato|blanco|roja': 31000, 'en U|0|porcelanato|blanco|verde': 32000,
+      'en U|0|porcelanato|color|roja': 33000,  'en U|0|porcelanato|color|verde': 34000,
+      'en U|1|cuarzo|blanco|roja': 35000, 'en U|1|cuarzo|blanco|verde': 36000,
+      'en U|1|cuarzo|color|roja': 37000,  'en U|1|cuarzo|color|verde': 38000,
+      'en U|1|porcelanato|blanco|roja': 39000, 'en U|1|porcelanato|blanco|verde': 40000,
+      'en U|1|porcelanato|color|roja': 41000,  'en U|1|porcelanato|color|verde': 42000,
+      'en U|2|cuarzo|blanco|roja': 43000, 'en U|2|cuarzo|blanco|verde': 44000,
+      'en U|2|cuarzo|color|roja': 45000,  'en U|2|cuarzo|color|verde': 46000,
+      'en U|2|porcelanato|blanco|roja': 47000, 'en U|2|porcelanato|blanco|verde': 48000,
+      'en U|2|porcelanato|color|roja': 49000,  'en U|2|porcelanato|color|verde': 50000,
+      'en l|0|cuarzo|blanco|roja': 51000, 'en l|0|cuarzo|blanco|verde': 52000,
+      'en l|0|cuarzo|color|roja': 53000,  'en l|0|cuarzo|color|verde': 54000,
+      'en l|0|porcelanato|blanco|roja': 55000, 'en l|0|porcelanato|blanco|verde': 56000,
+      'en l|0|porcelanato|color|roja': 57000,  'en l|0|porcelanato|color|verde': 58000,
+      'en l|1|cuarzo|blanco|roja': 59000, 'en l|1|cuarzo|blanco|verde': 60000,
+      'en l|1|cuarzo|color|roja': 61000,  'en l|1|cuarzo|color|verde': 62000,
+      'en l|1|porcelanato|blanco|roja': 63000, 'en l|1|porcelanato|blanco|verde': 64000,
+      'en l|1|porcelanato|color|roja': 65000,  'en l|1|porcelanato|color|verde': 66000,
+      'en i|0|cuarzo|blanco|roja': 67000, 'en i|0|cuarzo|blanco|verde': 68000,
+      'en i|0|cuarzo|color|roja': 69000,  'en i|0|cuarzo|color|verde': 70000,
+      'en i|0|porcelanato|blanco|roja': 71000, 'en i|0|porcelanato|blanco|verde': 72000,
+      'en i|0|porcelanato|color|roja': 73000,  'en i|0|porcelanato|color|verde': 74000,
+      'en i|1|cuarzo|blanco|roja': 75000, 'en i|1|cuarzo|blanco|verde': 76000,
+      'en i|1|cuarzo|color|roja': 77000,  'en i|1|cuarzo|color|verde': 78000,
+      'en i|1|porcelanato|blanco|roja': 79000, 'en i|1|porcelanato|blanco|verde': 80000,
+      'en i|1|porcelanato|color|roja': 81000,  'en i|1|porcelanato|color|verde': 82000,
+    }
+  },
+  {
+    num: 7, concepto: 'Parrilla', tipo: 'simple',
+    titulo: '¿Con o sin parrilla?',
+    subtitulo: 'La parrilla es el elemento central del quincho.',
+    opciones: [
+      { material: 'Con parrilla', colors: [{ color: null, precio: 88000 }] },
+      { material: 'Sin parrilla', colors: [{ color: null, precio: 89000 }] },
+    ]
+  },
 ];
 
-const MODELOS = {
-  esencial: { nombre: 'Esencial', data: BASE_DATA },
-  flex:  { nombre: 'Flex',  data: BASE_DATA },
-  pro:  { nombre: 'Pro',  data: BASE_DATA },
-};
-
-/* ═══════════════════════════════
-   PLACEHOLDER SVG
-═══════════════════════════════ */
-const PLACEHOLDER = `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"
-  stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="4" y="4" width="36" height="36" rx="3"/>
-  <circle cx="15" cy="15" r="4"/>
-  <path d="M4 30l10-10 8 8 6-6 12 12"/>
-</svg>`;
-
-/* ═══════════════════════════════
+/* ═══════════════════════════════════════
    STATE
-═══════════════════════════════ */
+═══════════════════════════════════════ */
 let modeloActivo = null;
-let FIXED_COST = 0;
-let STEPS = [];
+let currentView = 'landing'; // 'landing' | 'welcome' | 'step' | 'contact' | 'success'
+let currentStepIdx = 0;       // index into VIEWS array
+let VIEWS = [];               // flat list of all sub-steps
+
+// Selections per view key
 let sel = {};
-let currentStep = -1;
 
-/* ═══════════════════════════════
-   BUILD STEPS FROM DATA
-═══════════════════════════════ */
-function buildSteps(data) {
-  let fixedCost = 0;
-  data.forEach(r => { if (r[7]==='no' && r[8]==='fijo') fixedCost += Number(r[5])||0; });
-
-  const visRows = data.filter(r => r[7]==='si').sort((a,b) => Number(a[0])-Number(b[0]));
-  const secMap = new Map();
-  visRows.forEach(r => {
-    const [orden,seccion,subseccion,nombre,desc,precio,img,,tipo] = r;
-    const secKey = String(seccion).trim();
-    if (!secMap.has(secKey)) secMap.set(secKey, { orden: Number(orden), subs: new Map() });
-    const subKey = String(subseccion||'').trim()||'__';
-    const sec = secMap.get(secKey);
-    if (!sec.subs.has(subKey)) sec.subs.set(subKey, { label: subKey==='__'?'':subKey, tipo: String(tipo), options:[] });
-    sec.subs.get(subKey).options.push({ name:String(nombre||''), desc:String(desc||''), img:String(img||''), val:Number(precio)||0 });
-  });
-
-  const steps = [];
-  let n = 1;
-  const total = secMap.size;
-  secMap.forEach((sec, secName) => {
-    const subsArr = [...sec.subs.values()];
-    const isSingle = subsArr.length===1 && subsArr[0].label==='';
-    const id = 'step_'+secName.toLowerCase().replace(/[^a-z0-9]/g,'_');
-    if (isSingle) {
-      steps.push({ id, label:secName, eyebrow:`Paso ${n} de ${total}`, title:secName, type:'single', locked:subsArr[0].tipo==='fijo', key:id, options:subsArr[0].options });
-    } else {
-      steps.push({ id, label:secName, eyebrow:`Paso ${n} de ${total}`, title:secName, type:'multi', locked:subsArr[0].tipo==='fijo',
-        subs: subsArr.map(sub => ({ label:sub.label, key:id+'_'+sub.label.toLowerCase().replace(/[^a-z0-9]/g,'_'), locked:sub.tipo==='fijo', options:sub.options })) });
+/* ═══════════════════════════════════════
+   BUILD FLAT VIEWS FROM PRO_STEPS
+   Each "view" is one screen the user sees
+═══════════════════════════════════════ */
+function buildViews(steps) {
+  const views = [];
+  steps.forEach(step => {
+    if (step.tipo === 'simple') {
+      // Sub-step A: choose material
+      views.push({ stepNum: step.num, concepto: step.concepto, tipo: 'material', step });
+      // Sub-step B: choose color (only if any option has colors)
+      const hasColors = step.opciones.some(o => o.colors[0].color !== null);
+      if (hasColors) {
+        views.push({ stepNum: step.num, concepto: step.concepto, tipo: 'color', step });
+      }
+    } else if (step.tipo === 'muebleria') {
+      views.push({ stepNum: step.num, concepto: 'Mueblería', tipo: 'muebleria_dist', step });
+      views.push({ stepNum: step.num, concepto: 'Mueblería', tipo: 'muebleria_electros', step });
+      views.push({ stepNum: step.num, concepto: 'Mueblería', tipo: 'muebleria_cubierta', step });
+      views.push({ stepNum: step.num, concepto: 'Mueblería', tipo: 'muebleria_color_cub', step });
+      views.push({ stepNum: step.num, concepto: 'Mueblería', tipo: 'muebleria_melamina', step });
     }
-    n++;
   });
-  return { fixedCost, steps };
+  return views;
 }
 
-/* ═══════════════════════════════
-   MATH
-═══════════════════════════════ */
+/* ═══════════════════════════════════════
+   PRICE CALCULATION
+═══════════════════════════════════════ */
 function calcCP() {
-  let cp = FIXED_COST;
-  STEPS.forEach(s => {
-    if (s.type==='single') {
-      if (s.locked) cp += s.options[0]?.val||0;
-      else if (sel[s.key]!==undefined) cp += s.options[sel[s.key]].val;
-    } else {
-      s.subs.forEach(sub => {
-        if (sub.locked) cp += sub.options[0]?.val||0;
-        else if (sel[sub.key]!==undefined) cp += sub.options[sel[sub.key]].val;
-      });
+  let cp = PRECIO_BASE_PRO;
+  PRO_STEPS.forEach(step => {
+    if (step.tipo === 'simple') {
+      const matKey = `${step.num}_mat`;
+      const colKey = `${step.num}_col`;
+      const matIdx = sel[matKey];
+      if (matIdx === undefined) return;
+      const opt = step.opciones[matIdx];
+      const hasColors = opt.colors[0].color !== null;
+      if (!hasColors) {
+        cp += opt.colors[0].precio;
+      } else {
+        const colIdx = sel[colKey];
+        if (colIdx !== undefined) cp += opt.colors[colIdx].precio;
+      }
+    } else if (step.tipo === 'muebleria') {
+      const d = sel['m_dist'], e = sel['m_elec'], c = sel['m_cub'], cc = sel['m_ccub'], cm = sel['m_mel'];
+      if (d !== undefined && e !== undefined && c !== undefined && cc !== undefined && cm !== undefined) {
+        const dist = step.distribuciones[d].toLowerCase();
+        const elec = e; // 0, 1, 2
+        const cub  = step.cubiertas[c].toLowerCase();
+        const ccub = step.colores_cubierta[cc].toLowerCase();
+        const cmel = step.colores_melamina[cm].toLowerCase();
+        const key = `${dist}|${elec}|${cub}|${ccub}|${cmel}`;
+        cp += step.lookup[key] || 0;
+      }
     }
   });
   return cp;
 }
-function calcGT() { const cp=calcCP(); return Math.round((cp*(1+M2))/(1-M1)); }
-function fmt(n) { return '$'+Math.round(n).toLocaleString('es-CL'); }
-function stepDone(i) {
-  const s=STEPS[i];
-  if (s.locked) return true;
-  if (s.type==='single') return sel[s.key]!==undefined;
-  return s.subs.every(sub => sub.locked||sel[sub.key]!==undefined);
-}
-function countDone() { return STEPS.filter((_,i)=>stepDone(i)).length; }
 
-/* ═══════════════════════════════
-   INICIAR MODELO
-═══════════════════════════════ */
-function iniciarModelo(modelo) {
-  modeloActivo = modelo;
-  const m = MODELOS[modelo];
-  const built = buildSteps(m.data);
-  FIXED_COST = built.fixedCost;
-  STEPS = built.steps;
-  sel = {};
-  currentStep = -1;
-
-  // Update welcome badge
-  document.getElementById('welcome-badge').textContent = '● Modelo ' + m.nombre;
-  document.getElementById('sidebar-model-label').textContent = 'Modelo ' + m.nombre;
-
-  // Show configurador, hide landing
-  document.getElementById('landing').style.display = 'none';
-  document.getElementById('configurador').style.display = 'block';
-  document.getElementById('btn-cambiar-modelo').classList.add('visible');
-  document.getElementById('success-panel').classList.remove('active');
-
-  // Reset panels
-  document.querySelectorAll('.panel:not(#panel-welcome):not(.success-panel)').forEach(p => p.remove());
-
-  renderAll();
-  window.scrollTo({ top:0, behavior:'smooth' });
+function calcGT() {
+  const cp = calcCP();
+  return Math.round((cp * (1 + M2)) / (1 - M1));
 }
 
-function volverALanding() {
-  document.getElementById('configurador').style.display = 'none';
-  document.getElementById('landing').style.display = 'flex';
-  document.getElementById('btn-cambiar-modelo').classList.remove('visible');
-  document.getElementById('hdr-step').textContent = '';
-  document.getElementById('progress-fill').style.width = '0%';
-  document.getElementById('success-panel').classList.remove('active');
-  document.getElementById('sidebar-steps').style.opacity = '1';
-  modeloActivo = null;
-  window.scrollTo({ top:0, behavior:'smooth' });
+function fmt(n) { return '$' + Math.round(n).toLocaleString('es-CL'); }
+
+function viewDone(i) {
+  const v = VIEWS[i];
+  if (!v) return false;
+  const s = v.step;
+  if (v.tipo === 'material') return sel[`${s.num}_mat`] !== undefined;
+  if (v.tipo === 'color') {
+    const matIdx = sel[`${s.num}_mat`];
+    if (matIdx === undefined) return false;
+    const opt = s.opciones[matIdx];
+    if (opt.colors[0].color === null) return true; // no color needed
+    return sel[`${s.num}_col`] !== undefined;
+  }
+  if (v.tipo === 'muebleria_dist')     return sel['m_dist'] !== undefined;
+  if (v.tipo === 'muebleria_electros') return sel['m_elec'] !== undefined;
+  if (v.tipo === 'muebleria_cubierta') return sel['m_cub']  !== undefined;
+  if (v.tipo === 'muebleria_color_cub')return sel['m_ccub'] !== undefined;
+  if (v.tipo === 'muebleria_melamina') return sel['m_mel']  !== undefined;
+  return false;
 }
 
-/* ═══════════════════════════════
-   RENDER HEADER
-═══════════════════════════════ */
+function countDone() { return VIEWS.filter((_, i) => viewDone(i)).length; }
+
+/* ═══════════════════════════════════════
+   RENDER HEADER & PROGRESS
+═══════════════════════════════════════ */
 function updateHeader() {
   const el = document.getElementById('hdr-step');
-  if (currentStep===-1) el.textContent='';
-  else if (currentStep<STEPS.length) el.textContent=`Paso ${currentStep+1} de ${STEPS.length}`;
-  else el.textContent='Finalizar';
-  const pct = STEPS.length ? Math.round((countDone()/STEPS.length)*100) : 0;
-  document.getElementById('progress-fill').style.width = pct+'%';
+  if (currentView === 'landing' || currentView === 'welcome') {
+    el.textContent = '';
+  } else if (currentView === 'step') {
+    el.textContent = `Paso ${currentStepIdx + 1} de ${VIEWS.length}`;
+  } else if (currentView === 'contact') {
+    el.textContent = 'Finalizar';
+  } else {
+    el.textContent = '';
+  }
+  const pct = VIEWS.length ? Math.round((countDone() / VIEWS.length) * 100) : 0;
+  document.getElementById('progress-fill').style.width = (currentView === 'success' ? 100 : pct) + '%';
 }
 
-/* ═══════════════════════════════
+/* ═══════════════════════════════════════
    RENDER SIDEBAR
-═══════════════════════════════ */
+═══════════════════════════════════════ */
 function renderSidebar() {
   const el = document.getElementById('sidebar-steps');
-  el.innerHTML='';
-  STEPS.forEach((s,i) => {
-    const div = document.createElement('div');
-    div.className = 'sidebar-step'+(currentStep>=0&&i===currentStep?' active':'')+(stepDone(i)?' done':'');
-    const num = document.createElement('div'); num.className='step-num'; num.textContent=stepDone(i)?'✓':(i+1);
-    const lbl = document.createElement('span'); lbl.className='sidebar-label'; lbl.textContent=s.label;
-    div.append(num,lbl);
-    div.addEventListener('click',()=>{ currentStep=i; renderAll(); });
-    el.appendChild(div);
+  el.innerHTML = '';
+
+  // Wrap in timeline div
+  const timeline = document.createElement('div');
+  timeline.className = 'timeline';
+
+  // Group views by stepNum
+  const seen = new Set();
+  const sidebarItems = [];
+  VIEWS.forEach((v, i) => {
+    const key = v.stepNum;
+    if (!seen.has(key)) {
+      seen.add(key);
+      sidebarItems.push({ label: v.concepto, stepNum: key, firstViewIdx: i });
+    }
   });
-  const divider = document.createElement('div'); divider.className='sidebar-divider'; el.appendChild(divider);
+
+  sidebarItems.forEach((item, si) => {
+    const stepViews = VIEWS.map((v, i) => ({ v, i })).filter(x => x.v.stepNum === item.stepNum);
+    const done = stepViews.every(x => viewDone(x.i));
+    const active = currentView === 'step' && VIEWS[currentStepIdx]?.stepNum === item.stepNum;
+
+    // A step is accessible only if all previous steps are done
+    const prevDone = sidebarItems.slice(0, si).every(prev => {
+      const prevViews = VIEWS.map((v, i) => ({ v, i })).filter(x => x.v.stepNum === prev.stepNum);
+      return prevViews.every(x => viewDone(x.i));
+    });
+    const accessible = si === 0 || prevDone;
+    const locked = !accessible && !done;
+
+    const div = document.createElement('div');
+    div.className = 'sidebar-step' + (active ? ' active' : '') + (done ? ' done' : '') + (locked ? ' locked' : '');
+
+    const num = document.createElement('div');
+    num.className = 'step-num';
+    num.textContent = done ? '✓' : (si + 1);
+
+    const lbl = document.createElement('span');
+    lbl.className = 'sidebar-label';
+    lbl.textContent = item.label;
+
+    div.append(num, lbl);
+    div.addEventListener('click', () => {
+      if (locked) {
+        showOrderMessage();
+        return;
+      }
+      currentStepIdx = item.firstViewIdx; currentView = 'step'; renderAll();
+    });
+    timeline.appendChild(div);
+  });
+
+  el.appendChild(timeline);
+
+  // Finalizar
+  const divider = document.createElement('div'); divider.className = 'sidebar-divider'; 
+  divider.style.margin = '0.75rem 1.5rem';
+  el.appendChild(divider);
+
   const fin = document.createElement('div');
-  fin.className='sidebar-step'+(currentStep===STEPS.length?' active':'');
-  const finNum=document.createElement('div'); finNum.className='step-num'; finNum.textContent='→';
-  const finLbl=document.createElement('span'); finLbl.className='sidebar-label'; finLbl.textContent='Finalizar';
-  fin.append(finNum,finLbl);
-  fin.addEventListener('click',()=>{ currentStep=STEPS.length; renderAll(); });
+  const allViewsDone = VIEWS.every((_, i) => viewDone(i));
+  fin.className = 'sidebar-fin' + (currentView === 'contact' ? ' active' : '') + (!allViewsDone ? ' locked' : '');
+  fin.style.padding = '0 1.5rem';
+  const finIcon = document.createElement('div'); finIcon.className = 'sidebar-fin-icon'; finIcon.textContent = '→';
+  const finLbl = document.createElement('span'); finLbl.className = 'sidebar-fin-label'; finLbl.textContent = 'Finalizar';
+  fin.append(finIcon, finLbl);
+  fin.addEventListener('click', () => {
+    const allDone = VIEWS.every((_, i) => viewDone(i));
+    if (!allDone) { showOrderMessage(); return; }
+    currentView = 'contact'; renderAll();
+  });
   el.appendChild(fin);
 }
 
-/* ═══════════════════════════════
-   BUILD GRID
-═══════════════════════════════ */
-function buildGrid(options,key,locked,onChange) {
-  if (locked && sel[key]===undefined) sel[key]=0;
-  const grid=document.createElement('div'); grid.className='options-grid';
-  options.forEach((opt,i)=>{
-    const isSelected=locked?i===0:sel[key]===i;
-    const card=document.createElement('div');
-    card.className='opt-card'+(isSelected?' selected':'');
-    const imgHTML=opt.img?`<img src="${opt.img}" alt="${opt.name}" loading="lazy" onerror="this.parentElement.innerHTML='${PLACEHOLDER.replace(/"/g,"'")}'">`  :PLACEHOLDER;
-    card.innerHTML=`<div class="opt-img">${imgHTML}</div><div class="opt-body"><div class="opt-name">${opt.name}</div><div class="opt-desc">${opt.desc}</div></div><div class="opt-check"></div>`;
-    if (!locked) card.addEventListener('click',()=>{ sel[key]=i; onChange(); });
+/* ═══════════════════════════════════════
+   BUILD SELECTION CARDS
+═══════════════════════════════════════ */
+function buildCards(items, selKey, onChange, autoAdvance = true) {
+  const grid = document.createElement('div');
+  grid.className = 'options-grid';
+  items.forEach((item, i) => {
+    const card = document.createElement('div');
+    card.className = 'opt-card' + (sel[selKey] === i ? ' selected' : '');
+    card.innerHTML = `
+      <div class="opt-img">${PLACEHOLDER}</div>
+      <div class="opt-body">
+        <div class="opt-name">${item.label}</div>
+        ${item.sub ? `<div class="opt-desc">${item.sub}</div>` : ''}
+      </div>
+      <div class="opt-check"></div>`;
+    card.addEventListener('click', () => {
+      sel[selKey] = i;
+      onChange();
+      if (autoAdvance) {
+        setTimeout(() => {
+          const isLast = currentStepIdx === VIEWS.length - 1;
+          if (isLast) { currentView = 'contact'; }
+          else { currentStepIdx++; currentView = 'step'; }
+          renderAll();
+        }, 280);
+      }
+    });
     grid.appendChild(card);
   });
   return grid;
 }
 
-/* ═══════════════════════════════
-   RENDER STEPS
-═══════════════════════════════ */
-function renderSteps() {
-  document.querySelectorAll('.panel:not(#panel-welcome):not(.success-panel)').forEach(p=>p.remove());
-  const main=document.getElementById('main-content');
-  const success=document.getElementById('success-panel');
+/* ═══════════════════════════════════════
+   RENDER STEP VIEW
+═══════════════════════════════════════ */
+function renderStepView(v) {
+  const main = document.getElementById('main-content');
+  // Clear JS panels only
+  main.querySelectorAll('.panel:not(#panel-welcome):not(.success-panel)').forEach(p => p.remove());
 
-  STEPS.forEach((step,i)=>{
-    const panel=document.createElement('div');
-    panel.className='panel'; panel.id='panel-'+step.id;
-    panel.innerHTML=`<div class="panel-eyebrow">${step.eyebrow}</div><div class="panel-title">${step.title}</div><div class="panel-subtitle">${step.locked?'Este elemento está incluido en tu quincho.':'Elige la opción que mejor se adapte a lo que buscas.'}</div>`;
-    if (step.type==='single') {
-      panel.appendChild(buildGrid(step.options,step.key,step.locked,()=>renderAll()));
-    } else {
-      step.subs.forEach(sub=>{
-        const lbl=document.createElement('div'); lbl.className='sub-label'; lbl.textContent=sub.label;
-        panel.appendChild(lbl);
-        panel.appendChild(buildGrid(sub.options,sub.key,sub.locked,()=>renderAll()));
-      });
-    }
-    const btns=document.createElement('div'); btns.className='nav-btns';
-    if (i>0) { const back=document.createElement('button'); back.className='btn-back'; back.textContent='← Atrás'; back.addEventListener('click',()=>{ currentStep=i-1; renderAll(); }); btns.appendChild(back); }
-    const next=document.createElement('button'); next.className='btn-next';
-    next.textContent=i===STEPS.length-1?'Finalizar →':'Siguiente →';
-    next.addEventListener('click',()=>{ currentStep=i+1; renderAll(); });
-    btns.appendChild(next); panel.appendChild(btns);
-    main.insertBefore(panel,success);
-  });
+  const panel = document.createElement('div');
+  panel.className = 'panel active';
 
-  renderContactPanel(main,success);
+  const isFirst = currentStepIdx === 0;
+  const isLast  = currentStepIdx === VIEWS.length - 1;
+  const stepNumDisplay = `Paso ${currentStepIdx + 1} de ${VIEWS.length}`;
+
+  let titleHTML = '';
+  let contentEl = null;
+
+  const s = v.step;
+
+  if (v.tipo === 'material') {
+    titleHTML = `
+      <div class="panel-eyebrow">${stepNumDisplay} · ${s.concepto}</div>
+      <div class="panel-title">${s.titulo}</div>
+      <div class="panel-subtitle">${s.subtitulo}</div>`;
+    const items = s.opciones.map(o => ({ label: o.material, sub: '' }));
+    contentEl = buildCards(items, `${s.num}_mat`, () => {
+      // Reset color selection when material changes
+      delete sel[`${s.num}_col`];
+      renderAll();
+    });
+  }
+
+  else if (v.tipo === 'color') {
+    const matIdx = sel[`${s.num}_mat`];
+    const opt = matIdx !== undefined ? s.opciones[matIdx] : null;
+    const matName = opt ? opt.material : '—';
+    titleHTML = `
+      <div class="panel-eyebrow">${stepNumDisplay} · ${s.concepto}</div>
+      <div class="panel-title">¿Qué color para ${matName}?</div>
+      <div class="panel-subtitle">Elige el color que mejor combine con tu espacio.</div>`;
+    const colors = opt ? opt.colors.map(c => ({ label: c.color, sub: fmt(c.precio) })) : [];
+    contentEl = buildCards(colors, `${s.num}_col`, () => renderAll());
+  }
+
+  else if (v.tipo === 'muebleria_dist') {
+    titleHTML = `
+      <div class="panel-eyebrow">${stepNumDisplay} · Mueblería</div>
+      <div class="panel-title">¿Cómo distribuyes la cocina?</div>
+      <div class="panel-subtitle">Elige la distribución de los muebles dentro del quincho.</div>`;
+    const items = s.distribuciones.map(d => ({ label: d }));
+    contentEl = buildCards(items, 'm_dist', () => renderAll());
+  }
+
+  else if (v.tipo === 'muebleria_electros') {
+    titleHTML = `
+      <div class="panel-eyebrow">${stepNumDisplay} · Mueblería</div>
+      <div class="panel-title">¿Cuántos electrodomésticos?</div>
+      <div class="panel-subtitle">Indica cuántos espacios para electrodomésticos necesitas en los muebles.</div>`;
+    const items = s.electros.map(e => ({ label: e }));
+    contentEl = buildCards(items, 'm_elec', () => renderAll());
+  }
+
+  else if (v.tipo === 'muebleria_cubierta') {
+    titleHTML = `
+      <div class="panel-eyebrow">${stepNumDisplay} · Mueblería</div>
+      <div class="panel-title">¿Qué tipo de cubierta?</div>
+      <div class="panel-subtitle">La cubierta define la durabilidad y estética del mesón.</div>`;
+    const items = s.cubiertas.map(c => ({ label: c }));
+    contentEl = buildCards(items, 'm_cub', () => renderAll());
+  }
+
+  else if (v.tipo === 'muebleria_color_cub') {
+    const cubNombre = s.cubiertas[sel['m_cub']] || 'cubierta';
+    titleHTML = `
+      <div class="panel-eyebrow">${stepNumDisplay} · Mueblería</div>
+      <div class="panel-title">¿Qué color de ${cubNombre}?</div>
+      <div class="panel-subtitle">Elige el color para la cubierta del mesón.</div>`;
+    const items = s.colores_cubierta.map(c => ({ label: c }));
+    contentEl = buildCards(items, 'm_ccub', () => renderAll());
+  }
+
+  else if (v.tipo === 'muebleria_melamina') {
+    titleHTML = `
+      <div class="panel-eyebrow">${stepNumDisplay} · Mueblería</div>
+      <div class="panel-title">¿Qué color de melamina?</div>
+      <div class="panel-subtitle">Elige el color de la melamina que conformará los muebles.</div>`;
+    const items = s.colores_melamina.map(c => ({ label: c }));
+    contentEl = buildCards(items, 'm_mel', () => renderAll());
+  }
+
+  panel.innerHTML = titleHTML;
+  if (contentEl) panel.appendChild(contentEl);
+
+  // Nav — only show back button; selection auto-advances
+  const btns = document.createElement('div'); btns.className = 'nav-btns';
+  if (!isFirst) {
+    const back = document.createElement('button'); back.className = 'btn-back'; back.textContent = '← Atrás';
+    back.addEventListener('click', () => { currentStepIdx--; currentView = 'step'; renderAll(); });
+    btns.appendChild(back);
+  }
+  panel.appendChild(btns);
+
+  const success = main.querySelector('.success-panel');
+  main.insertBefore(panel, success);
 }
 
-/* ═══════════════════════════════
-   RENDER CONTACT PANEL
-═══════════════════════════════ */
-function renderContactPanel(main,success) {
-  let panel=document.getElementById('panel-contact');
-  if (panel) panel.remove();
-  panel=document.createElement('div'); panel.className='panel'; panel.id='panel-contact';
-  const gt=calcGT();
-  const allDone=STEPS.every((_,i)=>stepDone(i));
-  const m=MODELOS[modeloActivo];
+/* ═══════════════════════════════════════
+   RENDER CONTACT VIEW
+═══════════════════════════════════════ */
+function renderContactView() {
+  const main = document.getElementById('main-content');
+  main.querySelectorAll('.panel:not(#panel-welcome):not(.success-panel)').forEach(p => p.remove());
 
-  panel.innerHTML=`
+  const gt = calcGT();
+  const panel = document.createElement('div');
+  panel.className = 'panel active';
+
+  // Build summary of selections — one line per step, ordered 1→7
+  let resumenHTML = '';
+  PRO_STEPS.forEach((step, idx) => {
+    const stepLabel = `<span class="summary-step-num">${idx + 1}</span>`;
+    if (step.tipo === 'simple') {
+      const matIdx = sel[`${step.num}_mat`];
+      if (matIdx === undefined) return;
+      const opt = step.opciones[matIdx];
+      const hasColor = opt.colors[0].color !== null;
+      const colIdx = sel[`${step.num}_col`];
+      const colorText = hasColor && colIdx !== undefined ? ` / ${opt.colors[colIdx].color}` : '';
+      resumenHTML += `<div class="summary-line">
+        <span class="summary-line-label">${stepLabel}${step.concepto}</span>
+        <span class="summary-line-val">${opt.material}${colorText}</span>
+      </div>`;
+    } else if (step.tipo === 'muebleria') {
+      const d = sel['m_dist'], e = sel['m_elec'], c = sel['m_cub'], cc = sel['m_ccub'], cm = sel['m_mel'];
+      const parts = [
+        d !== undefined ? step.distribuciones[d] : null,
+        e !== undefined ? step.electros[e] : null,
+        c !== undefined && cc !== undefined ? `${step.cubiertas[c]} ${step.colores_cubierta[cc]}` : null,
+        cm !== undefined ? `Melamina ${step.colores_melamina[cm]}` : null,
+      ].filter(Boolean);
+      if (parts.length) {
+        resumenHTML += `<div class="summary-line">
+          <span class="summary-line-label">${stepLabel}${step.concepto}</span>
+          <span class="summary-line-val">${parts.join(' / ')}</span>
+        </div>`;
+      }
+    }
+  });
+
+  panel.innerHTML = `
     <div class="panel-eyebrow">Último paso</div>
     <div class="panel-title">Finaliza tu configuración</div>
-    <div class="panel-subtitle">Tu quincho ${m.nombre} está listo. Déjanos tus datos y te enviamos el presupuesto detallado.</div>
+    <div class="panel-subtitle">Tu quincho Pro está listo. Revisa tus elecciones y déjanos tus datos.</div>
+
+    <div class="summary-card" style="margin-bottom:1.5rem">
+      <div class="summary-card-title">Resumen de tu quincho</div>
+      ${resumenHTML || '<div class="summary-line"><span class="summary-line-label" style="color:var(--muted)">Sin elecciones registradas</span></div>'}
+    </div>
+
     <div class="price-reveal">
       <div class="price-reveal-left">
-        <div class="pr-label">Precio estimado · Modelo ${m.nombre}</div>
+        <div class="pr-label">Precio estimado · Modelo Pro</div>
         <div class="pr-sub">Incluye materiales, mano de obra y terminaciones</div>
       </div>
       <div class="price-reveal-val">${fmt(gt)}</div>
     </div>
-    ${!allDone?`<div style="background:var(--gold-light);border:0.5px solid #D4C084;border-radius:7px;padding:9px 13px;font-size:12px;color:#7A5C1A;margin-bottom:1.25rem;">Tienes pasos sin completar — el precio es estimado con las elecciones actuales.</div>`:''}
+
     <div class="contact-form">
       <div class="form-field">
         <label class="form-label">Nombre y apellido</label>
@@ -790,95 +1089,214 @@ function renderContactPanel(main,success) {
     </div>
     <div id="submit-error" style="font-size:12px;color:#8B2B2B;margin-top:0.75rem;display:none;"></div>`;
 
-  main.insertBefore(panel,success);
-  document.getElementById('btn-back-contact').addEventListener('click',()=>{ currentStep=STEPS.length-1; renderAll(); });
-  document.getElementById('btn-submit').addEventListener('click',handleSubmit);
+  const success = main.querySelector('.success-panel');
+  main.insertBefore(panel, success);
+
+  document.getElementById('btn-back-contact').addEventListener('click', () => {
+    currentStepIdx = VIEWS.length - 1; currentView = 'step'; renderAll();
+  });
+  document.getElementById('btn-submit').addEventListener('click', handleSubmit);
 }
 
-/* ═══════════════════════════════
+/* ═══════════════════════════════════════
    SUBMIT
-═══════════════════════════════ */
+═══════════════════════════════════════ */
 function handleSubmit() {
-  const nombre=document.getElementById('f-nombre')?.value.trim()||'';
-  const email=document.getElementById('f-email')?.value.trim()||'';
-  const telefono=document.getElementById('f-telefono')?.value.trim()||'';
+  const nombre   = document.getElementById('f-nombre')?.value.trim() || '';
+  const email    = document.getElementById('f-email')?.value.trim()  || '';
+  const telefono = document.getElementById('f-telefono')?.value.trim()|| '';
 
-  let valid=true;
-  const setErr=(id,errId,show)=>{ document.getElementById(id)?.classList.toggle('error',show); const e=document.getElementById(errId); if(e) e.className='form-error-msg'+(show?' visible':''); if(show) valid=false; };
-  const phoneClean=telefono.replace(/\s+/g,'');
-  const phoneValid=/^(\+569|569|9)\d{8}$/.test(phoneClean);
-  setErr('f-nombre','e-nombre',!nombre);
-  setErr('f-email','e-email',!email||!/^[^@]+@[^@]+\.[^@]+$/.test(email));
-  setErr('f-telefono','e-telefono',!phoneValid);
+  let valid = true;
+  const setErr = (id, errId, show) => {
+    document.getElementById(id)?.classList.toggle('error', show);
+    const e = document.getElementById(errId);
+    if (e) e.className = 'form-error-msg' + (show ? ' visible' : '');
+    if (show) valid = false;
+  };
+  const phoneClean = telefono.replace(/\s+/g, '');
+  const phoneValid = /^(\+569|569|9)\d{8}$/.test(phoneClean);
+  setErr('f-nombre',   'e-nombre',   !nombre);
+  setErr('f-email',    'e-email',    !email || !/^[^@]+@[^@]+\.[^@]+$/.test(email));
+  setErr('f-telefono', 'e-telefono', !phoneValid);
   if (!valid) return;
 
-  const elecciones={};
-  STEPS.forEach(s=>{
-    if (s.type==='single') { const idx=s.locked?0:sel[s.key]; if(idx!==undefined) elecciones[s.label]={nombre:s.options[idx].name,precio:s.options[idx].val}; }
-    else { s.subs.forEach(sub=>{ const idx=sub.locked?0:sel[sub.key]; if(idx!==undefined) elecciones[sub.label]={nombre:sub.options[idx].name,precio:sub.options[idx].val}; }); }
+  // Build elecciones object
+  const elecciones = {};
+  PRO_STEPS.forEach(step => {
+    if (step.tipo === 'simple') {
+      const matIdx = sel[`${step.num}_mat`];
+      if (matIdx === undefined) return;
+      const opt = step.opciones[matIdx];
+      const hasColor = opt.colors[0].color !== null;
+      const colIdx = sel[`${step.num}_col`];
+      const precio = hasColor && colIdx !== undefined ? opt.colors[colIdx].precio : (opt.colors[0].precio || 0);
+      const colorText = hasColor && colIdx !== undefined ? opt.colors[colIdx].color : null;
+      elecciones[step.concepto] = {
+        nombre: opt.material + (colorText ? ` · ${colorText}` : ''),
+        precio
+      };
+    } else if (step.tipo === 'muebleria') {
+      const d = sel['m_dist'], e = sel['m_elec'], c = sel['m_cub'], cc = sel['m_ccub'], cm = sel['m_mel'];
+      const dist = d !== undefined ? step.distribuciones[d] : '—';
+      const elec = e !== undefined ? step.electros[e] : '—';
+      const cub  = c !== undefined ? step.cubiertas[c] : '—';
+      const ccub = cc !== undefined ? step.colores_cubierta[cc] : '—';
+      const cmel = cm !== undefined ? step.colores_melamina[cm] : '—';
+      const key = `${dist.toLowerCase()}|${e}|${cub.toLowerCase()}|${ccub.toLowerCase()}|${cmel.toLowerCase()}`;
+      elecciones['Mueblería'] = {
+        nombre: `${dist} · ${elec} · ${cub} ${ccub} · Melamina ${cmel}`,
+        precio: step.lookup[key] || 0
+      };
+    }
   });
 
-  const payload={ nombre, email, telefono, modelo: MODELOS[modeloActivo].nombre, precio_total:calcGT(), elecciones:JSON.stringify(elecciones), fecha:new Date().toLocaleString('es-CL') };
+  const payload = {
+    nombre, email, telefono,
+    modelo: 'Pro',
+    precio_total: calcGT(),
+    elecciones: JSON.stringify(elecciones),
+    fecha: new Date().toLocaleString('es-CL'),
+  };
 
-  const btn=document.getElementById('btn-submit');
-  const errEl=document.getElementById('submit-error');
-  btn.disabled=true; btn.textContent='Enviando…'; errEl.style.display='none';
+  const btn = document.getElementById('btn-submit');
+  const errEl = document.getElementById('submit-error');
+  btn.disabled = true; btn.textContent = 'Enviando…'; errEl.style.display = 'none';
 
-  if (!SHEETS_URL) { console.log('Payload:',payload); showSuccess(); return; }
+  if (!SHEETS_URL) { console.log('Payload:', payload); showSuccess(); return; }
 
-  fetch(SHEETS_URL,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) })
-    .then(()=>showSuccess())
-    .catch(()=>{ btn.disabled=false; btn.textContent='Enviar presupuesto →'; errEl.textContent='Hubo un problema al enviar. Intenta de nuevo.'; errEl.style.display='block'; });
+  fetch(SHEETS_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+    .then(() => showSuccess())
+    .catch(() => { btn.disabled = false; btn.textContent = 'Enviar presupuesto →'; errEl.textContent = 'Hubo un problema al enviar. Intenta de nuevo.'; errEl.style.display = 'block'; });
+}
+
+let toastTimeout = null;
+function showOrderMessage() {
+  const toast = document.getElementById('order-toast');
+  toast.classList.add('visible');
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => toast.classList.remove('visible'), 3500);
 }
 
 function showSuccess() {
-  document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
-  document.getElementById('sidebar-steps').style.opacity='0.35';
+  const main = document.getElementById('main-content');
+  main.querySelectorAll('.panel:not(#panel-welcome):not(.success-panel)').forEach(p => p.remove());
+  document.getElementById('panel-welcome').style.display = 'none';
+  document.getElementById('sidebar-steps').style.opacity = '0.35';
   document.getElementById('success-panel').classList.add('active');
-  document.getElementById('hdr-step').textContent='';
-  document.getElementById('progress-fill').style.width='100%';
+  currentView = 'success';
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('hdr-step').textContent = '';
 }
 
-/* ═══════════════════════════════
+/* ═══════════════════════════════════════
+   PLACEHOLDER SVG
+═══════════════════════════════════════ */
+const PLACEHOLDER = `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"
+  stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="4" y="4" width="36" height="36" rx="3"/>
+  <circle cx="15" cy="15" r="4"/>
+  <path d="M4 30l10-10 8 8 6-6 12 12"/>
+</svg>`;
+
+/* ═══════════════════════════════════════
    RENDER ALL
-═══════════════════════════════ */
+═══════════════════════════════════════ */
 function renderAll() {
+  const landing = document.getElementById('landing');
+  const configurador = document.getElementById('configurador');
+  const welcomePanel = document.getElementById('panel-welcome');
+
+  if (currentView === 'landing') {
+    landing.style.display = 'flex';
+    configurador.style.display = 'none';
+    document.getElementById('btn-cambiar-modelo').classList.remove('visible');
+  } else {
+    landing.style.display = 'none';
+    configurador.style.display = 'block';
+    document.getElementById('btn-cambiar-modelo').classList.add('visible');
+  }
+
+  if (currentView === 'welcome') {
+    welcomePanel.classList.add('active');
+  } else {
+    welcomePanel.classList.remove('active');
+  }
+
+  if (currentView === 'step') renderStepView(VIEWS[currentStepIdx]);
+  if (currentView === 'contact') renderContactView();
+
+  if (currentView !== 'success') {
+    document.getElementById('success-panel').classList.remove('active');
+    document.getElementById('sidebar-steps').style.opacity = '1';
+    welcomePanel.style.display = '';
+  }
+
   renderSidebar();
-  renderSteps();
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  if (currentStep===-1) document.getElementById('panel-welcome')?.classList.add('active');
-  else if (currentStep>=0&&currentStep<STEPS.length) document.getElementById('panel-'+STEPS[currentStep].id)?.classList.add('active');
-  else if (currentStep===STEPS.length) document.getElementById('panel-contact')?.classList.add('active');
   updateHeader();
-  window.scrollTo({top:0,behavior:'smooth'});
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-/* ═══════════════════════════════
-   EVENTOS GLOBALES
-═══════════════════════════════ */
-// Cards de modelo en landing
+/* ═══════════════════════════════════════
+   INICIAR MODELO
+═══════════════════════════════════════ */
+function iniciarModelo(modelo) {
+  modeloActivo = modelo;
+  sel = {};
+  currentStepIdx = 0;
+
+  if (modelo === 'pro') {
+    VIEWS = buildViews(PRO_STEPS);
+    document.getElementById('sidebar-model-label').textContent = 'Modelo Pro';
+    document.getElementById('welcome-badge').textContent = '● Modelo Pro';
+  }
+  // Esencial y Flex: pendiente
+
+  currentView = 'welcome';
+  document.getElementById('success-panel').classList.remove('active');
+  renderAll();
+}
+
+function volverALanding() {
+  currentView = 'landing';
+  modeloActivo = null;
+  sel = {};
+  document.getElementById('progress-fill').style.width = '0%';
+  document.getElementById('hdr-step').textContent = '';
+  renderAll();
+}
+
+/* ═══════════════════════════════════════
+   EVENTOS
+═══════════════════════════════════════ */
 document.querySelectorAll('.model-card').forEach(card => {
-  card.addEventListener('click', () => iniciarModelo(card.dataset.model));
+  card.addEventListener('click', () => {
+    const m = card.dataset.model;
+    if (m === 'pro') {
+      iniciarModelo(m);
+    } else {
+      // Esencial y Flex: próximamente
+      alert('Este modelo estará disponible próximamente.');
+    }
+  });
 });
 
-// Botón cambiar modelo
 document.getElementById('btn-cambiar-modelo').addEventListener('click', volverALanding);
-
-// Botón volver desde success
 document.getElementById('btn-volver-landing').addEventListener('click', volverALanding);
+document.getElementById('btn-welcome-start').addEventListener('click', () => {
+  currentStepIdx = 0; currentView = 'step'; renderAll();
+});
 
-// Welcome start
-document.getElementById('btn-welcome-start').addEventListener('click', () => { currentStep=0; renderAll(); });
-
-/* ═══════════════════════════════
-   URL PARAM — ?modelo=esencial
-   Permite llegar directo desde el brochure
-═══════════════════════════════ */
+/* ═══════════════════════════════════════
+   URL PARAM ?modelo=pro
+═══════════════════════════════════════ */
 const urlParams = new URLSearchParams(window.location.search);
 const modeloParam = urlParams.get('modelo')?.toLowerCase();
-if (modeloParam && MODELOS[modeloParam]) {
-  iniciarModelo(modeloParam);
+if (modeloParam === 'pro') {
+  iniciarModelo('pro');
 }
 </script>
+<div class="order-toast" id="order-toast">
+  El orden en que te pedimos customizar tu quincho tiene una lógica por detrás, cada elección abre otra. Por favor te pedimos hacerlo en el orden que muestra el sitio.
+</div>
 </body>
 </html>
