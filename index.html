@@ -263,8 +263,8 @@ header {
 main { padding: 2.5rem 3rem; max-width: 800px; }
 
 /* ── PANELS ── */
-.panel { display: none; }
-.panel.active { display: block; animation: fadeUp 0.22s ease; }
+.panel { display: none !important; }
+.panel.active { display: block !important; animation: fadeUp 0.22s ease; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 
 .panel-eyebrow  { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 0.4rem; }
@@ -556,227 +556,121 @@ main { padding: 2.5rem 3rem; max-width: 800px; }
 </div>
 
 <script>
-/* ═══════════════════════════════════════
-   CONFIGURACIÓN
-═══════════════════════════════════════ */
 const M1 = 0.20;
 const M2 = 0.10;
-const PRECIO_BASE_PRO = 0; // ← precio base del modelo Pro (estructura, MO, etc.)
 const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzUXDVWeLHBBOc3q6pHjzCcaJnqgTxOKAAqu8wnUvnd95WUiXZxCboHk3OiHUZkQLxp/exec';
 
-/* ═══════════════════════════════════════
-   DATOS PRO — extraídos del Excel
-═══════════════════════════════════════ */
-const PRO_STEPS = [
-  {
-    num: 1, concepto: 'Piso', tipo: 'simple',
-    titulo: '¿Qué tipo de piso?',
-    subtitulo: 'Elige el material y el color. El piso define la calidez y durabilidad de tu quincho.',
-    opciones: [
-      { material: 'Vinílico', colors: [{ color: 'Blanco', precio: 1000 }, { color: 'Negro', precio: 2000 }] },
-      { material: 'Porcelanato', colors: [{ color: 'Rojo', precio: 3000 }, { color: 'Verde', precio: 4000 }] },
-    ]
-  },
-  {
-    num: 2, concepto: 'Cielo', tipo: 'simple',
-    titulo: '¿Qué tipo de cielo?',
-    subtitulo: 'El cielo interior define la atmósfera del espacio.',
-    opciones: [
-      { material: 'WPC Ranurado', colors: [{ color: 'Café', precio: 5000 }, { color: 'Negro', precio: 6000 }] },
-      { material: 'Pino Machimbrado', colors: [{ color: 'Negro', precio: 7000 }, { color: 'Blanco', precio: 8000 }] },
-      { material: 'Volcanita', colors: [{ color: 'Rojo', precio: 9000 }, { color: 'Verde', precio: 10000 }] },
-    ]
-  },
-  {
-    num: 3, concepto: 'Muro interior', tipo: 'simple',
-    titulo: '¿Qué revestimiento interior?',
-    subtitulo: 'Los muros interiores enmarcan el ambiente de tu quincho.',
-    opciones: [
-      { material: 'WPC Ranurado Extruido', colors: [{ color: 'Blanco', precio: 11000 }, { color: 'Gris', precio: 12000 }] },
-      { material: 'Pino Horizontal', colors: [{ color: 'Café', precio: 13000 }, { color: 'Negro', precio: 14000 }] },
-      { material: 'Volcanita', colors: [{ color: 'Rojo', precio: 15000 }, { color: 'Verde', precio: 16000 }] },
-      { material: 'WPC Tabla Extruido', colors: [{ color: 'Café', precio: 19000 }, { color: 'Negro', precio: 20000 }] },
-    ]
-  },
-  {
-    num: 4, concepto: 'Muro exterior', tipo: 'simple',
-    titulo: '¿Qué revestimiento exterior?',
-    subtitulo: 'El exterior define el look principal del quincho y su resistencia al clima.',
-    opciones: [
-      { material: 'WPC Ranurado Coextruido', colors: [{ color: 'Blanco', precio: 17000 }, { color: 'Gris', precio: 18000 }] },
-      { material: 'Metálico', colors: [{ color: 'Negro', precio: 21000 }, { color: 'Gris', precio: 22000 }] },
-      { material: 'Pino Horizontal', colors: [{ color: 'Café', precio: 23000 }, { color: 'Beige', precio: 24000 }] },
-    ]
-  },
-  {
-    num: 5, concepto: 'Ventana lateral', tipo: 'simple',
-    titulo: '¿Con o sin ventana lateral?',
-    subtitulo: 'La ventana lateral aporta luminosidad y ventilación al espacio.',
-    opciones: [
-      { material: 'Con ventana', colors: [{ color: null, precio: 25000 }] },
-      { material: 'Sin ventana', colors: [{ color: null, precio: 26000 }] },
-    ]
-  },
-  {
-    num: 6, concepto: 'Mueblería', tipo: 'muebleria',
-    subtitulo: 'Personaliza tu cocina paso a paso.',
-    distribuciones: ['en U', 'En L', 'en I'],
-    electros: ['0 electrodomésticos', '1 electrodoméstico', '2 electrodomésticos'],
-    cubiertas: ['Cuarzo', 'Porcelanato'],
-    colores_cubierta: ['Blanco', 'Color'],
-    colores_melamina: ['Roja', 'Verde'],
-    lookup: {
-      'en U|0|cuarzo|blanco|roja': 27000, 'en U|0|cuarzo|blanco|verde': 28000,
-      'en U|0|cuarzo|color|roja': 29000,  'en U|0|cuarzo|color|verde': 30000,
-      'en U|0|porcelanato|blanco|roja': 31000, 'en U|0|porcelanato|blanco|verde': 32000,
-      'en U|0|porcelanato|color|roja': 33000,  'en U|0|porcelanato|color|verde': 34000,
-      'en U|1|cuarzo|blanco|roja': 35000, 'en U|1|cuarzo|blanco|verde': 36000,
-      'en U|1|cuarzo|color|roja': 37000,  'en U|1|cuarzo|color|verde': 38000,
-      'en U|1|porcelanato|blanco|roja': 39000, 'en U|1|porcelanato|blanco|verde': 40000,
-      'en U|1|porcelanato|color|roja': 41000,  'en U|1|porcelanato|color|verde': 42000,
-      'en U|2|cuarzo|blanco|roja': 43000, 'en U|2|cuarzo|blanco|verde': 44000,
-      'en U|2|cuarzo|color|roja': 45000,  'en U|2|cuarzo|color|verde': 46000,
-      'en U|2|porcelanato|blanco|roja': 47000, 'en U|2|porcelanato|blanco|verde': 48000,
-      'en U|2|porcelanato|color|roja': 49000,  'en U|2|porcelanato|color|verde': 50000,
-      'en l|0|cuarzo|blanco|roja': 51000, 'en l|0|cuarzo|blanco|verde': 52000,
-      'en l|0|cuarzo|color|roja': 53000,  'en l|0|cuarzo|color|verde': 54000,
-      'en l|0|porcelanato|blanco|roja': 55000, 'en l|0|porcelanato|blanco|verde': 56000,
-      'en l|0|porcelanato|color|roja': 57000,  'en l|0|porcelanato|color|verde': 58000,
-      'en l|1|cuarzo|blanco|roja': 59000, 'en l|1|cuarzo|blanco|verde': 60000,
-      'en l|1|cuarzo|color|roja': 61000,  'en l|1|cuarzo|color|verde': 62000,
-      'en l|1|porcelanato|blanco|roja': 63000, 'en l|1|porcelanato|blanco|verde': 64000,
-      'en l|1|porcelanato|color|roja': 65000,  'en l|1|porcelanato|color|verde': 66000,
-      'en i|0|cuarzo|blanco|roja': 67000, 'en i|0|cuarzo|blanco|verde': 68000,
-      'en i|0|cuarzo|color|roja': 69000,  'en i|0|cuarzo|color|verde': 70000,
-      'en i|0|porcelanato|blanco|roja': 71000, 'en i|0|porcelanato|blanco|verde': 72000,
-      'en i|0|porcelanato|color|roja': 73000,  'en i|0|porcelanato|color|verde': 74000,
-      'en i|1|cuarzo|blanco|roja': 75000, 'en i|1|cuarzo|blanco|verde': 76000,
-      'en i|1|cuarzo|color|roja': 77000,  'en i|1|cuarzo|color|verde': 78000,
-      'en i|1|porcelanato|blanco|roja': 79000, 'en i|1|porcelanato|blanco|verde': 80000,
-      'en i|1|porcelanato|color|roja': 81000,  'en i|1|porcelanato|color|verde': 82000,
-    }
-  },
-  {
-    num: 7, concepto: 'Parrilla', tipo: 'simple',
-    titulo: '¿Con o sin parrilla?',
-    subtitulo: 'La parrilla es el elemento central del quincho.',
-    opciones: [
-      { material: 'Con parrilla', colors: [{ color: null, precio: 88000 }] },
-      { material: 'Sin parrilla', colors: [{ color: null, precio: 89000 }] },
-    ]
-  },
-];
+const MODEL_DATA = {
+  pro:             [{"paso": 1, "concepto": "Piso", "tipo": "simple", "opciones": [{"material": "Vinilico", "colors": [{"color": "blanco", "precio": 1000}, {"color": "negro", "precio": 2000}]}, {"material": "Porcelanto", "colors": [{"color": "rojo", "precio": 3000}, {"color": "verde", "precio": 4000}]}]}, {"paso": 2, "concepto": "Cielo", "tipo": "simple", "opciones": [{"material": "WPC ranurado", "colors": [{"color": "café", "precio": 5000}, {"color": "negro", "precio": 6000}]}, {"material": "Pino Machimbrado", "colors": [{"color": "negro", "precio": 7000}, {"color": "blanco", "precio": 8000}]}, {"material": "Volcanita", "colors": [{"color": "rojo", "precio": 9000}, {"color": "verde", "precio": 10000}]}]}, {"paso": 3, "concepto": "Muro interior", "tipo": "simple", "opciones": [{"material": "WPC ranurado extruido", "colors": [{"color": "blanco", "precio": 11000}, {"color": "gris", "precio": 12000}]}, {"material": "Pino Horizontal", "colors": [{"color": "café", "precio": 13000}, {"color": "negro", "precio": 14000}]}, {"material": "Volcanita", "colors": [{"color": "rojo", "precio": 15000}, {"color": "verde", "precio": 16000}]}, {"material": "WPC tabla extruido", "colors": [{"color": "café", "precio": 19000}, {"color": "negro", "precio": 20000}]}]}, {"paso": 4, "concepto": "Muro exterior", "tipo": "simple", "opciones": [{"material": "WPC ranurado coexstruido", "colors": [{"color": "blanco", "precio": 17000}, {"color": "gris", "precio": 18000}]}, {"material": "Metálico", "colors": [{"color": "negro", "precio": 21000}, {"color": "gris", "precio": 22000}]}, {"material": "Pino horizontal", "colors": [{"color": "café", "precio": 23000}, {"color": "beige", "precio": 24000}]}]}, {"paso": 5, "concepto": "Ventana lateral", "tipo": "simple", "opciones": [{"material": "Con ventana", "colors": [{"color": null, "precio": 25000}]}, {"material": "Sin ventana", "colors": [{"color": null, "precio": 26000}]}]}, {"paso": 6, "concepto": "Muebleria", "tipo": "muebleria", "opciones": {}, "lookup": {"en U|0 electroméstico|cuarzo|blanco|roja": 27000, "en U|0 electroméstico|cuarzo|blanco|verde": 28000, "en U|0 electroméstico|cuarzo|color|roja": 29000, "en U|0 electroméstico|cuarzo|color|verde": 30000, "en U|0 electroméstico|porcelanato|blanco|roja": 31000, "en U|0 electroméstico|porcelanato|blanco|verde": 32000, "en U|0 electroméstico|porcelanato|color|roja": 33000, "en U|0 electroméstico|porcelanato|color|verde": 34000, "en U|1 electrodoméstico|cuarzo|blanco|roja": 35000, "en U|1 electrodoméstico|cuarzo|blanco|verde": 36000, "en U|1 electrodoméstico|cuarzo|color|roja": 37000, "en U|1 electrodoméstico|cuarzo|color|verde": 38000, "en U|1 electrodoméstico|porcelanato|blanco|roja": 39000, "en U|1 electrodoméstico|porcelanato|blanco|verde": 40000, "en U|1 electrodoméstico|porcelanato|color|roja": 41000, "en U|1 electrodoméstico|porcelanato|color|verde": 42000, "en U|2 electrodomésticos|cuarzo|blanco|roja": 43000, "en U|2 electrodomésticos|cuarzo|blanco|verde": 44000, "en U|2 electrodomésticos|cuarzo|color|roja": 45000, "en U|2 electrodomésticos|cuarzo|color|verde": 46000, "en U|2 electrodomésticos|porcelanato|blanco|roja": 47000, "en U|2 electrodomésticos|porcelanato|blanco|verde": 48000, "en U|2 electrodomésticos|porcelanato|color|roja": 49000, "en U|2 electrodomésticos|porcelanato|color|verde": 50000, "En L|0 electroméstico|cuarzo|blanco|roja": 51000, "En L|0 electroméstico|cuarzo|blanco|verde": 52000, "En L|0 electroméstico|cuarzo|color|roja": 53000, "En L|0 electroméstico|cuarzo|color|verde": 54000, "En L|0 electroméstico|porcelanato|blanco|roja": 55000, "En L|0 electroméstico|porcelanato|blanco|verde": 56000, "En L|0 electroméstico|porcelanato|color|roja": 57000, "En L|0 electroméstico|porcelanato|color|verde": 58000, "En L|1 electrodoméstico|cuarzo|blanco|roja": 59000, "En L|1 electrodoméstico|cuarzo|blanco|verde": 60000, "En L|1 electrodoméstico|cuarzo|color|roja": 61000, "En L|1 electrodoméstico|cuarzo|color|verde": 62000, "En L|1 electrodoméstico|porcelanato|blanco|roja": 63000, "En L|1 electrodoméstico|porcelanato|blanco|verde": 64000, "En L|1 electrodoméstico|porcelanato|color|roja": 65000, "En L|1 electrodoméstico|porcelanato|color|verde": 66000, "en I|0 electroméstico|cuarzo|blanco|roja": 67000, "en I|0 electroméstico|cuarzo|blanco|verde": 68000, "en I|0 electroméstico|cuarzo|color|roja": 69000, "en I|0 electroméstico|cuarzo|color|verde": 70000, "en I|0 electroméstico|porcelanato|blanco|roja": 71000, "en I|0 electroméstico|porcelanato|blanco|verde": 72000, "en I|0 electroméstico|porcelanato|color|roja": 73000, "en I|0 electroméstico|porcelanato|color|verde": 74000, "en I|1 electrodoméstico|cuarzo|blanco|roja": 75000, "en I|1 electrodoméstico|cuarzo|blanco|verde": 76000, "en I|1 electrodoméstico|cuarzo|color|roja": 77000, "en I|1 electrodoméstico|cuarzo|color|verde": 78000, "en I|1 electrodoméstico|porcelanato|blanco|roja": 79000, "en I|1 electrodoméstico|porcelanato|blanco|verde": 80000, "en I|1 electrodoméstico|porcelanato|color|roja": 81000, "en I|1 electrodoméstico|porcelanato|color|verde": 82000}, "distribuciones": ["en U", "En L", "en I"], "electros": ["0 electroméstico", "1 electrodoméstico", "2 electrodomésticos"], "cubiertas": ["cuarzo", "porcelanato"], "colores_cubierta": ["blanco", "color"], "colores_melamina": ["roja", "verde"]}, {"paso": 7, "concepto": "Parrilla", "tipo": "simple", "opciones": [{"material": "Con parrilla", "colors": [{"color": null, "precio": 88000}]}, {"material": "Sin parrilla", "colors": [{"color": null, "precio": 89000}]}]}],
+  esencial:        [{"paso": 1, "concepto": "Piso", "tipo": "simple", "opciones": [{"material": "Pino", "colors": [{"color": "blanco", "precio": 1000}, {"color": "negro", "precio": 2000}]}, {"material": "Deck WPC", "colors": [{"color": "rojo", "precio": 3000}, {"color": "verde", "precio": 4000}]}]}, {"paso": 2, "concepto": "Cielo", "tipo": "simple", "opciones": [{"material": "WPC ranurado extruido", "colors": [{"color": "café", "precio": 5000}, {"color": "negro", "precio": 6000}]}, {"material": "Pino Machimbrado", "colors": [{"color": "negro", "precio": 7000}, {"color": "blanco", "precio": 8000}]}]}, {"paso": 3, "concepto": "Muro interior", "tipo": "simple", "opciones": [{"material": "WPC ranurado coextruido", "colors": [{"color": "blanco", "precio": 9000}, {"color": "gris", "precio": 10000}]}, {"material": "Pino Horizontal", "colors": [{"color": "café", "precio": 11000}, {"color": "negro", "precio": 12000}]}, {"material": "Metálico", "colors": [{"color": "café", "precio": 13000}, {"color": "negro", "precio": 14000}]}]}, {"paso": 4, "concepto": "Muro exterior", "tipo": "simple", "opciones": [{"material": "WPC ranurado coexstruido", "colors": [{"color": "blanco", "precio": 15000}, {"color": "gris", "precio": 16000}]}, {"material": "Metálico", "colors": [{"color": "negro", "precio": 17000}, {"color": "gris", "precio": 18000}]}, {"material": "Pino vertical", "colors": [{"color": "café", "precio": 19000}, {"color": "beige", "precio": 20000}]}]}, {"paso": 5, "concepto": "Muebleria", "tipo": "muebleria", "opciones": {}, "lookup": {"en I|0 electroméstico|cuarzo|blanco|roja": 1000, "en I|0 electroméstico|cuarzo|blanco|verde": 2000, "en I|0 electroméstico|cuarzo|color|roja": 3000, "en I|0 electroméstico|cuarzo|color|verde": 4000, "en I|0 electroméstico|porcelanato|blanco|roja": 5000, "en I|0 electroméstico|porcelanato|blanco|verde": 6000, "en I|0 electroméstico|porcelanato|color|roja": 7000, "en I|0 electroméstico|porcelanato|color|verde": 8000, "en I|1 electrodoméstico|cuarzo|blanco|roja": 9000, "en I|1 electrodoméstico|cuarzo|blanco|verde": 10000, "en I|1 electrodoméstico|cuarzo|color|roja": 11000, "en I|1 electrodoméstico|cuarzo|color|verde": 12000, "en I|1 electrodoméstico|porcelanato|blanco|roja": 13000, "en I|1 electrodoméstico|porcelanato|blanco|verde": 14000, "en I|1 electrodoméstico|porcelanato|color|roja": 15000, "en I|1 electrodoméstico|porcelanato|color|verde": 16000}, "distribuciones": ["en I"], "electros": ["0 electroméstico", "1 electrodoméstico"], "cubiertas": ["cuarzo", "porcelanato"], "colores_cubierta": ["blanco", "color"], "colores_melamina": ["roja", "verde"]}, {"paso": 6, "concepto": "Parrilla", "tipo": "simple", "opciones": [{"material": "Parrilla nodo", "colors": [{"color": null, "precio": 88000}]}, {"material": "Sin parrilla", "colors": [{"color": null, "precio": 89000}]}]}],
+  flex_ventana:    [{"concepto": "Piso", "tipo": "simple", "opciones": [{"material": "Vinilico", "colors": [{"color": "blanco", "precio": 1000}, {"color": "negro", "precio": 2000}]}, {"material": "Porcelanto", "colors": [{"color": "rojo", "precio": 3000}, {"color": "verde", "precio": 4000}]}]}, {"concepto": "Cielo", "tipo": "simple", "opciones": [{"material": "WPC ranurado", "colors": [{"color": "café", "precio": 5000}, {"color": "negro", "precio": 6000}]}, {"material": "Pino Machimbrado", "colors": [{"color": "negro", "precio": 7000}, {"color": "blanco", "precio": 8000}]}, {"material": "Volcanita", "colors": [{"color": "rojo", "precio": 9000}]}]}, {"concepto": "Muro interior", "tipo": "simple", "opciones": [{"material": "WPC ranurado extruido", "colors": [{"color": "blanco", "precio": 10000}, {"color": "gris", "precio": 11000}]}, {"material": "Pino Horizontal", "colors": [{"color": "café", "precio": 12000}, {"color": "negro", "precio": 13000}]}, {"material": "Volcanita", "colors": [{"color": "rojo", "precio": 14000}, {"color": "verde", "precio": 15000}]}, {"material": "WPC tabla extruido", "colors": [{"color": "café", "precio": 18000}, {"color": "negro", "precio": 19000}]}]}, {"concepto": "Muro exterior", "tipo": "simple", "opciones": [{"material": "WPC ranurado coexstruido", "colors": [{"color": "blanco", "precio": 16000}, {"color": "gris", "precio": 17000}]}, {"material": "Metálico", "colors": [{"color": "negro", "precio": 20000}, {"color": "gris", "precio": 21000}]}, {"material": "Pino horizontal", "colors": [{"color": "café", "precio": 22000}, {"color": "beige", "precio": 23000}]}]}, {"concepto": "Muebleria", "tipo": "muebleria", "distribuciones": ["en U", "En L", "en I"], "electros": ["0 electroméstico", "1 electrodoméstico", "2 electrodomésticos"], "cubiertas": ["cuarzo", "porcelanato"], "colores_cubierta": ["blanco", "color"], "colores_melamina": ["roja", "verde"], "lookup": {"en U|0 electroméstico|cuarzo|blanco|roja": 24000, "en U|0 electroméstico|cuarzo|blanco|verde": 25000, "en U|0 electroméstico|cuarzo|color|roja": 26000, "en U|0 electroméstico|cuarzo|color|verde": 27000, "en U|0 electroméstico|porcelanato|blanco|roja": 28000, "en U|0 electroméstico|porcelanato|blanco|verde": 29000, "en U|0 electroméstico|porcelanato|color|roja": 30000, "en U|0 electroméstico|porcelanato|color|verde": 31000, "en U|1 electrodoméstico|cuarzo|blanco|roja": 32000, "en U|1 electrodoméstico|cuarzo|blanco|verde": 33000, "en U|1 electrodoméstico|cuarzo|color|roja": 34000, "en U|1 electrodoméstico|cuarzo|color|verde": 35000, "en U|1 electrodoméstico|porcelanato|blanco|roja": 36000, "en U|1 electrodoméstico|porcelanato|blanco|verde": 37000, "en U|1 electrodoméstico|porcelanato|color|roja": 38000, "en U|1 electrodoméstico|porcelanato|color|verde": 39000, "en U|2 electrodomésticos|cuarzo|blanco|roja": 40000, "en U|2 electrodomésticos|cuarzo|blanco|verde": 41000, "en U|2 electrodomésticos|cuarzo|color|roja": 42000, "en U|2 electrodomésticos|cuarzo|color|verde": 43000, "en U|2 electrodomésticos|porcelanato|blanco|roja": 44000, "en U|2 electrodomésticos|porcelanato|blanco|verde": 45000, "en U|2 electrodomésticos|porcelanato|color|roja": 46000, "en U|2 electrodomésticos|porcelanato|color|verde": 47000, "En L|0 electroméstico|cuarzo|blanco|roja": 48000, "En L|0 electroméstico|cuarzo|blanco|verde": 49000, "En L|0 electroméstico|cuarzo|color|roja": 50000, "En L|0 electroméstico|cuarzo|color|verde": 51000, "En L|0 electroméstico|porcelanato|blanco|roja": 52000, "En L|0 electroméstico|porcelanato|blanco|verde": 53000, "En L|0 electroméstico|porcelanato|color|roja": 54000, "En L|0 electroméstico|porcelanato|color|verde": 55000, "En L|1 electrodoméstico|cuarzo|blanco|roja": 56000, "En L|1 electrodoméstico|cuarzo|blanco|verde": 57000, "En L|1 electrodoméstico|cuarzo|color|roja": 58000, "En L|1 electrodoméstico|cuarzo|color|verde": 59000, "En L|1 electrodoméstico|porcelanato|blanco|roja": 60000, "En L|1 electrodoméstico|porcelanato|blanco|verde": 61000, "En L|1 electrodoméstico|porcelanato|color|roja": 62000, "En L|1 electrodoméstico|porcelanato|color|verde": 63000, "en I|0 electroméstico|cuarzo|blanco|roja": 64000, "en I|0 electroméstico|cuarzo|blanco|verde": 65000, "en I|0 electroméstico|cuarzo|color|roja": 66000, "en I|0 electroméstico|cuarzo|color|verde": 67000, "en I|0 electroméstico|porcelanato|blanco|roja": 68000, "en I|0 electroméstico|porcelanato|blanco|verde": 69000, "en I|0 electroméstico|porcelanato|color|roja": 70000, "en I|0 electroméstico|porcelanato|color|verde": 71000, "en I|1 electrodoméstico|cuarzo|blanco|roja": 72000, "en I|1 electrodoméstico|cuarzo|blanco|verde": 73000, "en I|1 electrodoméstico|cuarzo|color|roja": 74000, "en I|1 electrodoméstico|cuarzo|color|verde": 75000, "en I|1 electrodoméstico|porcelanato|blanco|roja": 76000, "en I|1 electrodoméstico|porcelanato|blanco|verde": 77000, "en I|1 electrodoméstico|porcelanato|color|roja": 78000, "en I|1 electrodoméstico|porcelanato|color|verde": 79000}}, {"concepto": "Parrilla", "tipo": "simple", "opciones": [{"material": "Parrilla nodo", "colors": [{"color": null, "precio": 88000}]}, {"material": "Sin parrilla", "colors": [{"color": null, "precio": 89000}]}]}],
+  flex_sinventana: [{"concepto": "Piso", "tipo": "simple", "opciones": [{"material": "Pino", "colors": [{"color": "blanco", "precio": 1000}, {"color": "negro", "precio": 2000}]}, {"material": "Deck WPC", "colors": [{"color": "rojo", "precio": 3000}, {"color": "verde", "precio": 4000}]}]}, {"concepto": "Cielo", "tipo": "simple", "opciones": [{"material": "WPC ranurado extruido", "colors": [{"color": "café", "precio": 5000}, {"color": "negro", "precio": 6000}]}, {"material": "Pino Machimbrado", "colors": [{"color": "negro", "precio": 7000}, {"color": "blanco", "precio": 8000}]}]}, {"concepto": "Muro interior", "tipo": "simple", "opciones": [{"material": "WPC ranurado coextruido", "colors": [{"color": "blanco", "precio": 9000}, {"color": "gris", "precio": 10000}]}, {"material": "Pino Horizontal", "colors": [{"color": "café", "precio": 11000}, {"color": "negro", "precio": 12000}]}, {"material": "Metálico", "colors": [{"color": "café", "precio": 13000}, {"color": "negro", "precio": 14000}]}]}, {"concepto": "Muro exterior", "tipo": "simple", "opciones": [{"material": "WPC ranurado coexstruido", "colors": [{"color": "blanco", "precio": 15000}, {"color": "gris", "precio": 16000}]}, {"material": "Metálico", "colors": [{"color": "negro", "precio": 17000}, {"color": "gris", "precio": 18000}]}, {"material": "Pino vertical", "colors": [{"color": "café", "precio": 19000}, {"color": "beige", "precio": 20000}]}]}, {"concepto": "Muebleria", "tipo": "muebleria", "distribuciones": ["en U", "En L", "en I"], "electros": ["0 electroméstico", "1 electrodoméstico", "2 electrodomésticos"], "cubiertas": ["cuarzo", "porcelanato"], "colores_cubierta": ["blanco", "color"], "colores_melamina": ["roja", "verde"], "lookup": {"en U|0 electroméstico|cuarzo|blanco|roja": 21000, "en U|0 electroméstico|cuarzo|blanco|verde": 22000, "en U|0 electroméstico|cuarzo|color|roja": 23000, "en U|0 electroméstico|cuarzo|color|verde": 24000, "en U|0 electroméstico|porcelanato|blanco|roja": 25000, "en U|0 electroméstico|porcelanato|blanco|verde": 26000, "en U|0 electroméstico|porcelanato|color|roja": 27000, "en U|0 electroméstico|porcelanato|color|verde": 28000, "en U|1 electrodoméstico|cuarzo|blanco|roja": 29000, "en U|1 electrodoméstico|cuarzo|blanco|verde": 30000, "en U|1 electrodoméstico|cuarzo|color|roja": 31000, "en U|1 electrodoméstico|cuarzo|color|verde": 32000, "en U|1 electrodoméstico|porcelanato|blanco|roja": 33000, "en U|1 electrodoméstico|porcelanato|blanco|verde": 34000, "en U|1 electrodoméstico|porcelanato|color|roja": 35000, "en U|1 electrodoméstico|porcelanato|color|verde": 36000, "en U|2 electrodomésticos|cuarzo|blanco|roja": 37000, "en U|2 electrodomésticos|cuarzo|blanco|verde": 38000, "en U|2 electrodomésticos|cuarzo|color|roja": 39000, "en U|2 electrodomésticos|cuarzo|color|verde": 40000, "en U|2 electrodomésticos|porcelanato|blanco|roja": 41000, "en U|2 electrodomésticos|porcelanato|blanco|verde": 42000, "en U|2 electrodomésticos|porcelanato|color|roja": 43000, "en U|2 electrodomésticos|porcelanato|color|verde": 44000, "En L|0 electroméstico|cuarzo|blanco|roja": 45000, "En L|0 electroméstico|cuarzo|blanco|verde": 46000, "En L|0 electroméstico|cuarzo|color|roja": 47000, "En L|0 electroméstico|cuarzo|color|verde": 48000, "En L|0 electroméstico|porcelanato|blanco|roja": 49000, "En L|0 electroméstico|porcelanato|blanco|verde": 50000, "En L|0 electroméstico|porcelanato|color|roja": 51000, "En L|0 electroméstico|porcelanato|color|verde": 52000, "En L|1 electrodoméstico|cuarzo|blanco|roja": 53000, "En L|1 electrodoméstico|cuarzo|blanco|verde": 54000, "En L|1 electrodoméstico|cuarzo|color|roja": 55000, "En L|1 electrodoméstico|cuarzo|color|verde": 56000, "En L|1 electrodoméstico|porcelanato|blanco|roja": 57000, "En L|1 electrodoméstico|porcelanato|blanco|verde": 58000, "En L|1 electrodoméstico|porcelanato|color|roja": 59000, "En L|1 electrodoméstico|porcelanato|color|verde": 60000, "en I|0 electroméstico|cuarzo|blanco|roja": 61000, "en I|0 electroméstico|cuarzo|blanco|verde": 62000, "en I|0 electroméstico|cuarzo|color|roja": 63000, "en I|0 electroméstico|cuarzo|color|verde": 64000, "en I|0 electroméstico|porcelanato|blanco|roja": 65000, "en I|0 electroméstico|porcelanato|blanco|verde": 66000, "en I|0 electroméstico|porcelanato|color|roja": 67000, "en I|0 electroméstico|porcelanato|color|verde": 68000, "en I|1 electrodoméstico|cuarzo|blanco|roja": 69000, "en I|1 electrodoméstico|cuarzo|blanco|verde": 70000, "en I|1 electrodoméstico|cuarzo|color|roja": 71000, "en I|1 electrodoméstico|cuarzo|color|verde": 72000, "en I|1 electrodoméstico|porcelanato|blanco|roja": 73000, "en I|1 electrodoméstico|porcelanato|blanco|verde": 74000, "en I|1 electrodoméstico|porcelanato|color|roja": 75000, "en I|1 electrodoméstico|porcelanato|color|verde": 76000}}, {"concepto": "Parrilla", "tipo": "simple", "opciones": [{"material": "Parrilla nodo", "colors": [{"color": null, "precio": 88000}]}, {"material": "Sin parrilla", "colors": [{"color": null, "precio": 89000}]}]}]
+};
 
-/* ═══════════════════════════════════════
-   STATE
-═══════════════════════════════════════ */
+const PLACEHOLDER = `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"
+  stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="4" y="4" width="36" height="36" rx="3"/>
+  <circle cx="15" cy="15" r="4"/><path d="M4 30l10-10 8 8 6-6 12 12"/></svg>`;
+
+// State
 let modeloActivo = null;
-let currentView = 'landing'; // 'landing' | 'welcome' | 'step' | 'contact' | 'success'
-let currentStepIdx = 0;       // index into VIEWS array
-let VIEWS = [];               // flat list of all sub-steps
-
-// Selections per view key
+let VIEWS = [];
+let currentView = 'landing';
+let currentStepIdx = 0;
 let sel = {};
+let flexBranch = null;
 
-/* ═══════════════════════════════════════
-   BUILD FLAT VIEWS FROM PRO_STEPS
-   Each "view" is one screen the user sees
-═══════════════════════════════════════ */
+// Build flat view list from steps
 function buildViews(steps) {
   const views = [];
-  steps.forEach(step => {
+  steps.forEach(function(step) {
+    const concepto = step.concepto || ('Paso ' + step.paso);
     if (step.tipo === 'simple') {
-      // Sub-step A: choose material
-      views.push({ stepNum: step.num, concepto: step.concepto, tipo: 'material', step });
-      // Sub-step B: choose color (only if any option has colors)
-      const hasColors = step.opciones.some(o => o.colors[0].color !== null);
-      if (hasColors) {
-        views.push({ stepNum: step.num, concepto: step.concepto, tipo: 'color', step });
+      views.push({ concepto: concepto, tipo: 'material', step: step });
+      if (step.opciones.some(function(o) { return o.colors[0].color !== null; })) {
+        views.push({ concepto: concepto, tipo: 'color', step: step });
       }
     } else if (step.tipo === 'muebleria') {
-      views.push({ stepNum: step.num, concepto: 'Mueblería', tipo: 'muebleria_dist', step });
-      views.push({ stepNum: step.num, concepto: 'Mueblería', tipo: 'muebleria_electros', step });
-      views.push({ stepNum: step.num, concepto: 'Mueblería', tipo: 'muebleria_cubierta', step });
-      views.push({ stepNum: step.num, concepto: 'Mueblería', tipo: 'muebleria_color_cub', step });
-      views.push({ stepNum: step.num, concepto: 'Mueblería', tipo: 'muebleria_melamina', step });
+      if (step.distribuciones.length > 1) {
+        views.push({ concepto: 'Mueblería', tipo: 'muebleria_dist', step: step });
+      } else {
+        sel['m_dist'] = 0;
+      }
+      views.push({ concepto: 'Mueblería', tipo: 'muebleria_electros', step: step });
+      views.push({ concepto: 'Mueblería', tipo: 'muebleria_cubierta', step: step });
+      views.push({ concepto: 'Mueblería', tipo: 'muebleria_color_cub', step: step });
+      views.push({ concepto: 'Mueblería', tipo: 'muebleria_melamina', step: step });
     }
   });
   return views;
 }
 
-/* ═══════════════════════════════════════
-   PRICE CALCULATION
-═══════════════════════════════════════ */
+function getSteps() {
+  if (modeloActivo === 'flex' && flexBranch) {
+    return MODEL_DATA['flex_' + flexBranch] || [];
+  }
+  return MODEL_DATA[modeloActivo] || [];
+}
+
+// Price
 function calcCP() {
-  let cp = PRECIO_BASE_PRO;
-  PRO_STEPS.forEach(step => {
+  let cp = 0;
+  getSteps().forEach(function(step) {
+    const concepto = step.concepto || ('paso' + step.paso);
     if (step.tipo === 'simple') {
-      const matKey = `${step.num}_mat`;
-      const colKey = `${step.num}_col`;
-      const matIdx = sel[matKey];
+      const matIdx = sel[concepto + '_mat'];
       if (matIdx === undefined) return;
       const opt = step.opciones[matIdx];
-      const hasColors = opt.colors[0].color !== null;
-      if (!hasColors) {
+      if (opt.colors[0].color === null) {
         cp += opt.colors[0].precio;
       } else {
-        const colIdx = sel[colKey];
-        if (colIdx !== undefined) cp += opt.colors[colIdx].precio;
+        const ci = sel[concepto + '_col'];
+        if (ci !== undefined) cp += opt.colors[ci].precio;
       }
     } else if (step.tipo === 'muebleria') {
-      const d = sel['m_dist'], e = sel['m_elec'], c = sel['m_cub'], cc = sel['m_ccub'], cm = sel['m_mel'];
-      if (d !== undefined && e !== undefined && c !== undefined && cc !== undefined && cm !== undefined) {
-        const dist = step.distribuciones[d].toLowerCase();
-        const elec = e; // 0, 1, 2
-        const cub  = step.cubiertas[c].toLowerCase();
-        const ccub = step.colores_cubierta[cc].toLowerCase();
-        const cmel = step.colores_melamina[cm].toLowerCase();
-        const key = `${dist}|${elec}|${cub}|${ccub}|${cmel}`;
+      const d = sel['m_dist'] !== undefined ? sel['m_dist'] : 0;
+      const e = sel['m_elec'], c = sel['m_cub'], cc = sel['m_ccub'], cm = sel['m_mel'];
+      if (e !== undefined && c !== undefined && cc !== undefined && cm !== undefined) {
+        const key = step.distribuciones[d] + '|' + step.electros[e] + '|' + step.cubiertas[c] + '|' + step.colores_cubierta[cc] + '|' + step.colores_melamina[cm];
         cp += step.lookup[key] || 0;
       }
     }
   });
   return cp;
 }
-
-function calcGT() {
-  const cp = calcCP();
-  return Math.round((cp * (1 + M2)) / (1 - M1));
-}
-
+function calcGT() { return Math.round((calcCP() * (1 + M2)) / (1 - M1)); }
 function fmt(n) { return '$' + Math.round(n).toLocaleString('es-CL'); }
 
+// View done check
 function viewDone(i) {
   const v = VIEWS[i];
   if (!v) return false;
+  if (v.tipo === 'flex_ventana_choice') return flexBranch !== null;
   const s = v.step;
-  if (v.tipo === 'material') return sel[`${s.num}_mat`] !== undefined;
+  const concepto = s ? (s.concepto || ('paso' + s.paso)) : '';
+  if (v.tipo === 'material') return sel[concepto + '_mat'] !== undefined;
   if (v.tipo === 'color') {
-    const matIdx = sel[`${s.num}_mat`];
-    if (matIdx === undefined) return false;
-    const opt = s.opciones[matIdx];
-    if (opt.colors[0].color === null) return true; // no color needed
-    return sel[`${s.num}_col`] !== undefined;
+    const mi = sel[concepto + '_mat'];
+    if (mi === undefined) return false;
+    if (s.opciones[mi].colors[0].color === null) return true;
+    return sel[concepto + '_col'] !== undefined;
   }
-  if (v.tipo === 'muebleria_dist')     return sel['m_dist'] !== undefined;
-  if (v.tipo === 'muebleria_electros') return sel['m_elec'] !== undefined;
-  if (v.tipo === 'muebleria_cubierta') return sel['m_cub']  !== undefined;
-  if (v.tipo === 'muebleria_color_cub')return sel['m_ccub'] !== undefined;
-  if (v.tipo === 'muebleria_melamina') return sel['m_mel']  !== undefined;
+  if (v.tipo === 'muebleria_dist')      return sel['m_dist'] !== undefined || s.distribuciones.length === 1;
+  if (v.tipo === 'muebleria_electros')  return sel['m_elec'] !== undefined;
+  if (v.tipo === 'muebleria_cubierta')  return sel['m_cub']  !== undefined;
+  if (v.tipo === 'muebleria_color_cub') return sel['m_ccub'] !== undefined;
+  if (v.tipo === 'muebleria_melamina')  return sel['m_mel']  !== undefined;
   return false;
 }
+function countDone() { return VIEWS.filter(function(_, i) { return viewDone(i); }).length; }
 
-function countDone() { return VIEWS.filter((_, i) => viewDone(i)).length; }
-
-/* ═══════════════════════════════════════
-   RENDER HEADER & PROGRESS
-═══════════════════════════════════════ */
+// Header
 function updateHeader() {
   const el = document.getElementById('hdr-step');
   if (currentView === 'landing' || currentView === 'welcome') {
     el.textContent = '';
   } else if (currentView === 'step') {
-    el.textContent = `Paso ${currentStepIdx + 1} de ${VIEWS.length}`;
+    el.textContent = 'Paso ' + (currentStepIdx + 1) + ' de ' + VIEWS.length;
   } else if (currentView === 'contact') {
     el.textContent = 'Finalizar';
   } else {
@@ -786,109 +680,86 @@ function updateHeader() {
   document.getElementById('progress-fill').style.width = (currentView === 'success' ? 100 : pct) + '%';
 }
 
-/* ═══════════════════════════════════════
-   RENDER SIDEBAR
-═══════════════════════════════════════ */
+// Sidebar
 function renderSidebar() {
   const el = document.getElementById('sidebar-steps');
   el.innerHTML = '';
-
-  // Wrap in timeline div
   const timeline = document.createElement('div');
   timeline.className = 'timeline';
 
-  // Group views by stepNum
   const seen = new Set();
-  const sidebarItems = [];
-  VIEWS.forEach((v, i) => {
-    const key = v.stepNum;
-    if (!seen.has(key)) {
-      seen.add(key);
-      sidebarItems.push({ label: v.concepto, stepNum: key, firstViewIdx: i });
+  const items = [];
+  VIEWS.forEach(function(v, i) {
+    if (!seen.has(v.concepto)) {
+      seen.add(v.concepto);
+      items.push({ label: v.concepto, firstViewIdx: i });
     }
   });
 
-  sidebarItems.forEach((item, si) => {
-    const stepViews = VIEWS.map((v, i) => ({ v, i })).filter(x => x.v.stepNum === item.stepNum);
-    const done = stepViews.every(x => viewDone(x.i));
-    const active = currentView === 'step' && VIEWS[currentStepIdx]?.stepNum === item.stepNum;
-
-    // A step is accessible only if all previous steps are done
-    const prevDone = sidebarItems.slice(0, si).every(prev => {
-      const prevViews = VIEWS.map((v, i) => ({ v, i })).filter(x => x.v.stepNum === prev.stepNum);
-      return prevViews.every(x => viewDone(x.i));
+  items.forEach(function(item, si) {
+    const itemViews = VIEWS.map(function(v, i) { return { v: v, i: i }; }).filter(function(x) { return x.v.concepto === item.label; });
+    const done   = itemViews.every(function(x) { return viewDone(x.i); });
+    const active = currentView === 'step' && VIEWS[currentStepIdx] && VIEWS[currentStepIdx].concepto === item.label;
+    const prevDone = items.slice(0, si).every(function(prev) {
+      const pv = VIEWS.map(function(v, i) { return { v: v, i: i }; }).filter(function(x) { return x.v.concepto === prev.label; });
+      return pv.every(function(x) { return viewDone(x.i); });
     });
-    const accessible = si === 0 || prevDone;
-    const locked = !accessible && !done;
+    const locked = !done && !active && !prevDone && si > 0;
 
     const div = document.createElement('div');
     div.className = 'sidebar-step' + (active ? ' active' : '') + (done ? ' done' : '') + (locked ? ' locked' : '');
-
-    const num = document.createElement('div');
-    num.className = 'step-num';
-    num.textContent = done ? '✓' : (si + 1);
-
-    const lbl = document.createElement('span');
-    lbl.className = 'sidebar-label';
-    lbl.textContent = item.label;
-
+    const num = document.createElement('div'); num.className = 'step-num'; num.textContent = done ? '✓' : (si + 1);
+    const lbl = document.createElement('span'); lbl.className = 'sidebar-label'; lbl.textContent = item.label;
     div.append(num, lbl);
-    div.addEventListener('click', () => {
-      if (locked) {
-        showOrderMessage();
-        return;
-      }
+    div.addEventListener('click', function() {
+      if (locked) { showOrderMessage(); return; }
       currentStepIdx = item.firstViewIdx; currentView = 'step'; renderAll();
     });
     timeline.appendChild(div);
   });
-
   el.appendChild(timeline);
 
-  // Finalizar
-  const divider = document.createElement('div'); divider.className = 'sidebar-divider'; 
-  divider.style.margin = '0.75rem 1.5rem';
+  const divider = document.createElement('div');
+  divider.className = 'sidebar-divider'; divider.style.margin = '0.75rem 1.5rem';
   el.appendChild(divider);
 
+  const allDone = VIEWS.every(function(_, i) { return viewDone(i); });
   const fin = document.createElement('div');
-  const allViewsDone = VIEWS.every((_, i) => viewDone(i));
-  fin.className = 'sidebar-fin' + (currentView === 'contact' ? ' active' : '') + (!allViewsDone ? ' locked' : '');
+  fin.className = 'sidebar-fin' + (currentView === 'contact' ? ' active' : '') + (!allDone ? ' locked' : '');
   fin.style.padding = '0 1.5rem';
   const finIcon = document.createElement('div'); finIcon.className = 'sidebar-fin-icon'; finIcon.textContent = '→';
-  const finLbl = document.createElement('span'); finLbl.className = 'sidebar-fin-label'; finLbl.textContent = 'Finalizar';
+  const finLbl  = document.createElement('span'); finLbl.className = 'sidebar-fin-label'; finLbl.textContent = 'Finalizar';
   fin.append(finIcon, finLbl);
-  fin.addEventListener('click', () => {
-    const allDone = VIEWS.every((_, i) => viewDone(i));
+  fin.addEventListener('click', function() {
     if (!allDone) { showOrderMessage(); return; }
     currentView = 'contact'; renderAll();
   });
   el.appendChild(fin);
 }
 
-/* ═══════════════════════════════════════
-   BUILD SELECTION CARDS
-═══════════════════════════════════════ */
-function buildCards(items, selKey, onChange, autoAdvance = true) {
+// Cards
+function buildCards(items, selKey, onChange, autoAdvance) {
+  if (autoAdvance === undefined) autoAdvance = true;
   const grid = document.createElement('div');
   grid.className = 'options-grid';
-  items.forEach((item, i) => {
+  items.forEach(function(item, i) {
     const card = document.createElement('div');
     card.className = 'opt-card' + (sel[selKey] === i ? ' selected' : '');
-    card.innerHTML = `
-      <div class="opt-img">${PLACEHOLDER}</div>
-      <div class="opt-body">
-        <div class="opt-name">${item.label}</div>
-        ${item.sub ? `<div class="opt-desc">${item.sub}</div>` : ''}
-      </div>
-      <div class="opt-check"></div>`;
-    card.addEventListener('click', () => {
+    card.innerHTML = '<div class="opt-img">' + PLACEHOLDER + '</div>' +
+      '<div class="opt-body"><div class="opt-name">' + item.label + '</div>' +
+      (item.sub ? '<div class="opt-desc">' + item.sub + '</div>' : '') +
+      '</div><div class="opt-check"></div>';
+    card.addEventListener('click', function() {
       sel[selKey] = i;
       onChange();
       if (autoAdvance) {
-        setTimeout(() => {
-          const isLast = currentStepIdx === VIEWS.length - 1;
-          if (isLast) { currentView = 'contact'; }
-          else { currentStepIdx++; currentView = 'step'; }
+        setTimeout(function() {
+          if (currentStepIdx === VIEWS.length - 1) {
+            currentView = 'contact';
+          } else {
+            currentStepIdx++;
+            currentView = 'step';
+          }
           renderAll();
         }, 280);
       }
@@ -898,288 +769,229 @@ function buildCards(items, selKey, onChange, autoAdvance = true) {
   return grid;
 }
 
-/* ═══════════════════════════════════════
-   RENDER STEP VIEW
-═══════════════════════════════════════ */
+// Render step
 function renderStepView(v) {
   const main = document.getElementById('main-content');
-  // Clear JS panels only
-  main.querySelectorAll('.panel:not(#panel-welcome):not(.success-panel)').forEach(p => p.remove());
+  main.querySelectorAll('.panel:not(#panel-welcome):not(.success-panel)').forEach(function(p) { p.remove(); });
 
-  const panel = document.createElement('div');
-  panel.className = 'panel active';
+  // Flex ventana choice
+  if (v.tipo === 'flex_ventana_choice') {
+    const panel = document.createElement('div'); panel.className = 'panel active';
+    panel.innerHTML = '<div class="panel-eyebrow">Paso 1 · Ventanas</div>' +
+      '<div class="panel-title">¿Con o sin ventanas?</div>' +
+      '<div class="panel-subtitle">Esta elección define los materiales disponibles para tu quincho.</div>';
+    const grid = document.createElement('div'); grid.className = 'options-grid';
+    [['Con ventanas', 'ventana'], ['Sin ventanas', 'sinventana']].forEach(function(pair) {
+      const label = pair[0]; const branch = pair[1];
+      const card = document.createElement('div');
+      card.className = 'opt-card' + (flexBranch === branch ? ' selected' : '');
+      card.innerHTML = '<div class="opt-img">' + PLACEHOLDER + '</div>' +
+        '<div class="opt-body"><div class="opt-name">' + label + '</div></div>' +
+        '<div class="opt-check"></div>';
+      card.addEventListener('click', function() {
+        flexBranch = branch;
+        sel = {};
+        const branchSteps = buildViews(MODEL_DATA['flex_' + branch] || []);
+        VIEWS = [{ concepto: 'Ventanas', tipo: 'flex_ventana_choice', step: null }].concat(branchSteps);
+        setTimeout(function() { currentStepIdx = 1; currentView = 'step'; renderAll(); }, 280);
+      });
+      grid.appendChild(card);
+    });
+    panel.appendChild(grid);
+    main.insertBefore(panel, main.querySelector('.success-panel'));
+    return;
+  }
 
-  const isFirst = currentStepIdx === 0;
-  const isLast  = currentStepIdx === VIEWS.length - 1;
-  const stepNumDisplay = `Paso ${currentStepIdx + 1} de ${VIEWS.length}`;
-
+  const panel = document.createElement('div'); panel.className = 'panel active';
+  const s = v.step;
+  const concepto = s ? (s.concepto || ('paso' + s.paso)) : '';
+  const eyebrow = 'Paso ' + (currentStepIdx + 1) + ' de ' + VIEWS.length;
   let titleHTML = '';
   let contentEl = null;
 
-  const s = v.step;
-
   if (v.tipo === 'material') {
-    titleHTML = `
-      <div class="panel-eyebrow">${stepNumDisplay} · ${s.concepto}</div>
-      <div class="panel-title">${s.titulo}</div>
-      <div class="panel-subtitle">${s.subtitulo}</div>`;
-    const items = s.opciones.map(o => ({ label: o.material, sub: '' }));
-    contentEl = buildCards(items, `${s.num}_mat`, () => {
-      // Reset color selection when material changes
-      delete sel[`${s.num}_col`];
-      renderAll();
-    });
-  }
-
-  else if (v.tipo === 'color') {
-    const matIdx = sel[`${s.num}_mat`];
-    const opt = matIdx !== undefined ? s.opciones[matIdx] : null;
-    const matName = opt ? opt.material : '—';
-    titleHTML = `
-      <div class="panel-eyebrow">${stepNumDisplay} · ${s.concepto}</div>
-      <div class="panel-title">¿Qué color para ${matName}?</div>
-      <div class="panel-subtitle">Elige el color que mejor combine con tu espacio.</div>`;
-    const colors = opt ? opt.colors.map(c => ({ label: c.color, sub: fmt(c.precio) })) : [];
-    contentEl = buildCards(colors, `${s.num}_col`, () => renderAll());
-  }
-
-  else if (v.tipo === 'muebleria_dist') {
-    titleHTML = `
-      <div class="panel-eyebrow">${stepNumDisplay} · Mueblería</div>
-      <div class="panel-title">¿Cómo distribuyes la cocina?</div>
-      <div class="panel-subtitle">Elige la distribución de los muebles dentro del quincho.</div>`;
-    const items = s.distribuciones.map(d => ({ label: d }));
-    contentEl = buildCards(items, 'm_dist', () => renderAll());
-  }
-
-  else if (v.tipo === 'muebleria_electros') {
-    titleHTML = `
-      <div class="panel-eyebrow">${stepNumDisplay} · Mueblería</div>
-      <div class="panel-title">¿Cuántos electrodomésticos?</div>
-      <div class="panel-subtitle">Indica cuántos espacios para electrodomésticos necesitas en los muebles.</div>`;
-    const items = s.electros.map(e => ({ label: e }));
-    contentEl = buildCards(items, 'm_elec', () => renderAll());
-  }
-
-  else if (v.tipo === 'muebleria_cubierta') {
-    titleHTML = `
-      <div class="panel-eyebrow">${stepNumDisplay} · Mueblería</div>
-      <div class="panel-title">¿Qué tipo de cubierta?</div>
-      <div class="panel-subtitle">La cubierta define la durabilidad y estética del mesón.</div>`;
-    const items = s.cubiertas.map(c => ({ label: c }));
-    contentEl = buildCards(items, 'm_cub', () => renderAll());
-  }
-
-  else if (v.tipo === 'muebleria_color_cub') {
+    titleHTML = '<div class="panel-eyebrow">' + eyebrow + ' · ' + concepto + '</div>' +
+      '<div class="panel-title">¿Qué ' + concepto.toLowerCase() + ' prefieres?</div>' +
+      '<div class="panel-subtitle">Elige el material que mejor se adapte a tu estilo.</div>';
+    contentEl = buildCards(s.opciones.map(function(o) { return { label: o.material }; }), concepto + '_mat', function() { delete sel[concepto + '_col']; renderAll(); });
+  } else if (v.tipo === 'color') {
+    const mi = sel[concepto + '_mat'];
+    const opt = mi !== undefined ? s.opciones[mi] : null;
+    titleHTML = '<div class="panel-eyebrow">' + eyebrow + ' · ' + concepto + '</div>' +
+      '<div class="panel-title">¿Qué color para ' + (opt ? opt.material : '—') + '?</div>' +
+      '<div class="panel-subtitle">Elige el color que mejor combine con tu espacio.</div>';
+    contentEl = buildCards(opt ? opt.colors.map(function(c) { return { label: c.color }; }) : [], concepto + '_col', function() { renderAll(); });
+  } else if (v.tipo === 'muebleria_dist') {
+    titleHTML = '<div class="panel-eyebrow">' + eyebrow + ' · Mueblería</div>' +
+      '<div class="panel-title">¿Cómo distribuyes la cocina?</div>' +
+      '<div class="panel-subtitle">Elige la distribución de los muebles dentro del quincho.</div>';
+    contentEl = buildCards(s.distribuciones.map(function(d) { return { label: d }; }), 'm_dist', function() { renderAll(); });
+  } else if (v.tipo === 'muebleria_electros') {
+    titleHTML = '<div class="panel-eyebrow">' + eyebrow + ' · Mueblería</div>' +
+      '<div class="panel-title">¿Cuántos electrodomésticos?</div>' +
+      '<div class="panel-subtitle">Indica cuántos espacios para electrodomésticos necesitas.</div>';
+    contentEl = buildCards(s.electros.map(function(e) { return { label: e }; }), 'm_elec', function() { renderAll(); });
+  } else if (v.tipo === 'muebleria_cubierta') {
+    titleHTML = '<div class="panel-eyebrow">' + eyebrow + ' · Mueblería</div>' +
+      '<div class="panel-title">¿Qué tipo de cubierta?</div>' +
+      '<div class="panel-subtitle">La cubierta define la durabilidad y estética del mesón.</div>';
+    contentEl = buildCards(s.cubiertas.map(function(c) { return { label: c }; }), 'm_cub', function() { renderAll(); });
+  } else if (v.tipo === 'muebleria_color_cub') {
     const cubNombre = s.cubiertas[sel['m_cub']] || 'cubierta';
-    titleHTML = `
-      <div class="panel-eyebrow">${stepNumDisplay} · Mueblería</div>
-      <div class="panel-title">¿Qué color de ${cubNombre}?</div>
-      <div class="panel-subtitle">Elige el color para la cubierta del mesón.</div>`;
-    const items = s.colores_cubierta.map(c => ({ label: c }));
-    contentEl = buildCards(items, 'm_ccub', () => renderAll());
-  }
-
-  else if (v.tipo === 'muebleria_melamina') {
-    titleHTML = `
-      <div class="panel-eyebrow">${stepNumDisplay} · Mueblería</div>
-      <div class="panel-title">¿Qué color de melamina?</div>
-      <div class="panel-subtitle">Elige el color de la melamina que conformará los muebles.</div>`;
-    const items = s.colores_melamina.map(c => ({ label: c }));
-    contentEl = buildCards(items, 'm_mel', () => renderAll());
+    titleHTML = '<div class="panel-eyebrow">' + eyebrow + ' · Mueblería</div>' +
+      '<div class="panel-title">¿Qué color de ' + cubNombre + '?</div>' +
+      '<div class="panel-subtitle">Elige el color para la cubierta del mesón.</div>';
+    contentEl = buildCards(s.colores_cubierta.map(function(c) { return { label: c }; }), 'm_ccub', function() { renderAll(); });
+  } else if (v.tipo === 'muebleria_melamina') {
+    titleHTML = '<div class="panel-eyebrow">' + eyebrow + ' · Mueblería</div>' +
+      '<div class="panel-title">¿Qué color de melamina?</div>' +
+      '<div class="panel-subtitle">Elige el color de la melamina de los muebles.</div>';
+    contentEl = buildCards(s.colores_melamina.map(function(c) { return { label: c }; }), 'm_mel', function() { renderAll(); });
   }
 
   panel.innerHTML = titleHTML;
   if (contentEl) panel.appendChild(contentEl);
-
-  // Nav — only show back button; selection auto-advances
-  const btns = document.createElement('div'); btns.className = 'nav-btns';
-  if (!isFirst) {
+  if (currentStepIdx > 0) {
+    const btns = document.createElement('div'); btns.className = 'nav-btns';
     const back = document.createElement('button'); back.className = 'btn-back'; back.textContent = '← Atrás';
-    back.addEventListener('click', () => { currentStepIdx--; currentView = 'step'; renderAll(); });
+    back.addEventListener('click', function() { currentStepIdx--; currentView = 'step'; renderAll(); });
     btns.appendChild(back);
+    panel.appendChild(btns);
   }
-  panel.appendChild(btns);
-
-  const success = main.querySelector('.success-panel');
-  main.insertBefore(panel, success);
+  main.insertBefore(panel, main.querySelector('.success-panel'));
 }
 
-/* ═══════════════════════════════════════
-   RENDER CONTACT VIEW
-═══════════════════════════════════════ */
+// Render contact
 function renderContactView() {
   const main = document.getElementById('main-content');
-  main.querySelectorAll('.panel:not(#panel-welcome):not(.success-panel)').forEach(p => p.remove());
+  main.querySelectorAll('.panel:not(#panel-welcome):not(.success-panel)').forEach(function(p) { p.remove(); });
 
   const gt = calcGT();
-  const panel = document.createElement('div');
-  panel.className = 'panel active';
-
-  // Build summary of selections — one line per step, ordered 1→7
+  const modelNombre = modeloActivo === 'pro' ? 'Pro' : modeloActivo === 'esencial' ? 'Esencial' : 'Flex';
+  const steps = getSteps();
   let resumenHTML = '';
-  PRO_STEPS.forEach((step, idx) => {
-    const stepLabel = `<span class="summary-step-num">${idx + 1}</span>`;
+
+  steps.forEach(function(step, idx) {
+    const concepto = step.concepto || ('Paso ' + (idx + 1));
+    const stepLabel = '<span class="summary-step-num">' + (idx + 1) + '</span>';
     if (step.tipo === 'simple') {
-      const matIdx = sel[`${step.num}_mat`];
-      if (matIdx === undefined) return;
-      const opt = step.opciones[matIdx];
-      const hasColor = opt.colors[0].color !== null;
-      const colIdx = sel[`${step.num}_col`];
-      const colorText = hasColor && colIdx !== undefined ? ` / ${opt.colors[colIdx].color}` : '';
-      resumenHTML += `<div class="summary-line">
-        <span class="summary-line-label">${stepLabel}${step.concepto}</span>
-        <span class="summary-line-val">${opt.material}${colorText}</span>
-      </div>`;
+      const mi = sel[concepto + '_mat'];
+      if (mi === undefined) return;
+      const opt = step.opciones[mi];
+      const ci = sel[concepto + '_col'];
+      const colorText = opt.colors[0].color !== null && ci !== undefined ? ' / ' + opt.colors[ci].color : '';
+      resumenHTML += '<div class="summary-line"><span class="summary-line-label">' + stepLabel + concepto + '</span><span class="summary-line-val">' + opt.material + colorText + '</span></div>';
     } else if (step.tipo === 'muebleria') {
-      const d = sel['m_dist'], e = sel['m_elec'], c = sel['m_cub'], cc = sel['m_ccub'], cm = sel['m_mel'];
+      const d = sel['m_dist'] !== undefined ? sel['m_dist'] : 0;
+      const e = sel['m_elec'], c = sel['m_cub'], cc = sel['m_ccub'], cm = sel['m_mel'];
       const parts = [
-        d !== undefined ? step.distribuciones[d] : null,
+        step.distribuciones.length > 1 && d !== undefined ? step.distribuciones[d] : null,
         e !== undefined ? step.electros[e] : null,
-        c !== undefined && cc !== undefined ? `${step.cubiertas[c]} ${step.colores_cubierta[cc]}` : null,
-        cm !== undefined ? `Melamina ${step.colores_melamina[cm]}` : null,
+        c !== undefined && cc !== undefined ? step.cubiertas[c] + ' ' + step.colores_cubierta[cc] : null,
+        cm !== undefined ? 'Melamina ' + step.colores_melamina[cm] : null,
       ].filter(Boolean);
       if (parts.length) {
-        resumenHTML += `<div class="summary-line">
-          <span class="summary-line-label">${stepLabel}${step.concepto}</span>
-          <span class="summary-line-val">${parts.join(' / ')}</span>
-        </div>`;
+        resumenHTML += '<div class="summary-line"><span class="summary-line-label">' + stepLabel + 'Mueblería</span><span class="summary-line-val">' + parts.join(' / ') + '</span></div>';
       }
     }
   });
 
-  panel.innerHTML = `
-    <div class="panel-eyebrow">Último paso</div>
-    <div class="panel-title">Finaliza tu configuración</div>
-    <div class="panel-subtitle">Tu quincho Pro está listo. Revisa tus elecciones y déjanos tus datos.</div>
+  if (modeloActivo === 'flex' && flexBranch) {
+    const ventanaLabel = flexBranch === 'ventana' ? 'Con ventanas' : 'Sin ventanas';
+    resumenHTML = '<div class="summary-line"><span class="summary-line-label"><span class="summary-step-num">✦</span>Ventanas</span><span class="summary-line-val">' + ventanaLabel + '</span></div>' + resumenHTML;
+  }
 
-    <div class="summary-card" style="margin-bottom:1.5rem">
-      <div class="summary-card-title">Resumen de tu quincho</div>
-      ${resumenHTML || '<div class="summary-line"><span class="summary-line-label" style="color:var(--muted)">Sin elecciones registradas</span></div>'}
-    </div>
+  const panel = document.createElement('div'); panel.className = 'panel active';
+  panel.innerHTML =
+    '<div class="panel-eyebrow">Último paso</div>' +
+    '<div class="panel-title">Finaliza tu configuración</div>' +
+    '<div class="panel-subtitle">Tu quincho ' + modelNombre + ' está listo. Revisa tus elecciones y déjanos tus datos.</div>' +
+    '<div class="summary-card" style="margin-bottom:1.5rem"><div class="summary-card-title">Resumen de tu quincho</div>' +
+    (resumenHTML || '<div class="summary-line"><span class="summary-line-label" style="color:var(--muted)">Sin elecciones</span></div>') +
+    '</div>' +
+    '<div class="price-reveal">' +
+      '<div class="price-reveal-left"><div class="pr-label">Precio estimado · Modelo ' + modelNombre + '</div><div class="pr-sub">Incluye materiales, mano de obra y terminaciones</div></div>' +
+      '<div class="price-reveal-val">' + fmt(gt) + '</div>' +
+    '</div>' +
+    '<div class="contact-form">' +
+      '<div class="form-field"><label class="form-label">Nombre y apellido</label><input class="form-input" id="f-nombre" type="text" placeholder="Ej: Juan Pérez" autocomplete="name"><span class="form-error-msg" id="e-nombre">Ingresa tu nombre completo</span></div>' +
+      '<div class="form-field"><label class="form-label">Correo electrónico</label><input class="form-input" id="f-email" type="email" placeholder="juan@correo.com" autocomplete="email"><span class="form-error-msg" id="e-email">Ingresa un correo válido</span></div>' +
+      '<div class="form-field"><label class="form-label">Teléfono de contacto</label><input class="form-input" id="f-telefono" type="tel" placeholder="+56 9 1234 5678" autocomplete="tel"><span class="form-error-msg" id="e-telefono">Ingresa un teléfono chileno válido: +569 seguido de 8 dígitos</span></div>' +
+    '</div>' +
+    '<div class="nav-btns"><button class="btn-back" id="btn-back-contact">← Atrás</button><button class="btn-submit" id="btn-submit">Enviar presupuesto →</button></div>' +
+    '<div id="submit-error" style="font-size:12px;color:#8B2B2B;margin-top:0.75rem;display:none;"></div>';
 
-    <div class="price-reveal">
-      <div class="price-reveal-left">
-        <div class="pr-label">Precio estimado · Modelo Pro</div>
-        <div class="pr-sub">Incluye materiales, mano de obra y terminaciones</div>
-      </div>
-      <div class="price-reveal-val">${fmt(gt)}</div>
-    </div>
-
-    <div class="contact-form">
-      <div class="form-field">
-        <label class="form-label">Nombre y apellido</label>
-        <input class="form-input" id="f-nombre" type="text" placeholder="Ej: Juan Pérez" autocomplete="name">
-        <span class="form-error-msg" id="e-nombre">Ingresa tu nombre completo</span>
-      </div>
-      <div class="form-field">
-        <label class="form-label">Correo electrónico</label>
-        <input class="form-input" id="f-email" type="email" placeholder="juan@correo.com" autocomplete="email">
-        <span class="form-error-msg" id="e-email">Ingresa un correo válido</span>
-      </div>
-      <div class="form-field">
-        <label class="form-label">Teléfono de contacto</label>
-        <input class="form-input" id="f-telefono" type="tel" placeholder="+56 9 1234 5678" autocomplete="tel">
-        <span class="form-error-msg" id="e-telefono">Ingresa un teléfono chileno válido: +569 seguido de 8 dígitos</span>
-      </div>
-    </div>
-    <div class="nav-btns">
-      <button class="btn-back" id="btn-back-contact">← Atrás</button>
-      <button class="btn-submit" id="btn-submit">Enviar presupuesto →</button>
-    </div>
-    <div id="submit-error" style="font-size:12px;color:#8B2B2B;margin-top:0.75rem;display:none;"></div>`;
-
-  const success = main.querySelector('.success-panel');
-  main.insertBefore(panel, success);
-
-  document.getElementById('btn-back-contact').addEventListener('click', () => {
-    currentStepIdx = VIEWS.length - 1; currentView = 'step'; renderAll();
-  });
+  main.insertBefore(panel, main.querySelector('.success-panel'));
+  document.getElementById('btn-back-contact').addEventListener('click', function() { currentStepIdx = VIEWS.length - 1; currentView = 'step'; renderAll(); });
   document.getElementById('btn-submit').addEventListener('click', handleSubmit);
 }
 
-/* ═══════════════════════════════════════
-   SUBMIT
-═══════════════════════════════════════ */
+// Submit
 function handleSubmit() {
-  const nombre   = document.getElementById('f-nombre')?.value.trim() || '';
-  const email    = document.getElementById('f-email')?.value.trim()  || '';
-  const telefono = document.getElementById('f-telefono')?.value.trim()|| '';
-
+  const nombre   = (document.getElementById('f-nombre')  && document.getElementById('f-nombre').value.trim())   || '';
+  const email    = (document.getElementById('f-email')   && document.getElementById('f-email').value.trim())    || '';
+  const telefono = (document.getElementById('f-telefono')&& document.getElementById('f-telefono').value.trim()) || '';
   let valid = true;
-  const setErr = (id, errId, show) => {
-    document.getElementById(id)?.classList.toggle('error', show);
-    const e = document.getElementById(errId);
-    if (e) e.className = 'form-error-msg' + (show ? ' visible' : '');
+  function setErr(id, errId, show) {
+    const inp = document.getElementById(id); if (inp) inp.classList.toggle('error', show);
+    const e = document.getElementById(errId); if (e) e.className = 'form-error-msg' + (show ? ' visible' : '');
     if (show) valid = false;
-  };
+  }
   const phoneClean = telefono.replace(/\s+/g, '');
-  const phoneValid = /^(\+569|569|9)\d{8}$/.test(phoneClean);
   setErr('f-nombre',   'e-nombre',   !nombre);
   setErr('f-email',    'e-email',    !email || !/^[^@]+@[^@]+\.[^@]+$/.test(email));
-  setErr('f-telefono', 'e-telefono', !phoneValid);
+  setErr('f-telefono', 'e-telefono', !/(\+569|569|9)\d{8}/.test(phoneClean));
   if (!valid) return;
 
-  // Build elecciones object
+  const modelNombre = modeloActivo === 'pro' ? 'Pro' : modeloActivo === 'esencial' ? 'Esencial' : 'Flex';
   const elecciones = {};
-  PRO_STEPS.forEach(step => {
+  getSteps().forEach(function(step) {
+    const concepto = step.concepto || step.paso;
     if (step.tipo === 'simple') {
-      const matIdx = sel[`${step.num}_mat`];
-      if (matIdx === undefined) return;
-      const opt = step.opciones[matIdx];
-      const hasColor = opt.colors[0].color !== null;
-      const colIdx = sel[`${step.num}_col`];
-      const precio = hasColor && colIdx !== undefined ? opt.colors[colIdx].precio : (opt.colors[0].precio || 0);
-      const colorText = hasColor && colIdx !== undefined ? opt.colors[colIdx].color : null;
-      elecciones[step.concepto] = {
-        nombre: opt.material + (colorText ? ` · ${colorText}` : ''),
-        precio
-      };
+      const mi = sel[concepto + '_mat']; if (mi === undefined) return;
+      const opt = step.opciones[mi]; const ci = sel[concepto + '_col'];
+      const colorText = opt.colors[0].color !== null && ci !== undefined ? opt.colors[ci].color : null;
+      const precio    = opt.colors[0].color !== null && ci !== undefined ? opt.colors[ci].precio : opt.colors[0].precio;
+      elecciones[concepto] = { nombre: opt.material + (colorText ? ' / ' + colorText : ''), precio: precio };
     } else if (step.tipo === 'muebleria') {
-      const d = sel['m_dist'], e = sel['m_elec'], c = sel['m_cub'], cc = sel['m_ccub'], cm = sel['m_mel'];
-      const dist = d !== undefined ? step.distribuciones[d] : '—';
-      const elec = e !== undefined ? step.electros[e] : '—';
-      const cub  = c !== undefined ? step.cubiertas[c] : '—';
-      const ccub = cc !== undefined ? step.colores_cubierta[cc] : '—';
-      const cmel = cm !== undefined ? step.colores_melamina[cm] : '—';
-      const key = `${dist.toLowerCase()}|${e}|${cub.toLowerCase()}|${ccub.toLowerCase()}|${cmel.toLowerCase()}`;
-      elecciones['Mueblería'] = {
-        nombre: `${dist} · ${elec} · ${cub} ${ccub} · Melamina ${cmel}`,
-        precio: step.lookup[key] || 0
-      };
+      const d = sel['m_dist'] !== undefined ? sel['m_dist'] : 0;
+      const e = sel['m_elec'], c = sel['m_cub'], cc = sel['m_ccub'], cm = sel['m_mel'];
+      const dist = step.distribuciones[d];
+      const elec = e !== undefined ? step.electros[e] : '';
+      const cub  = c !== undefined ? step.cubiertas[c] : '';
+      const ccub = cc !== undefined ? step.colores_cubierta[cc] : '';
+      const cmel = cm !== undefined ? step.colores_melamina[cm] : '';
+      const key  = dist + '|' + elec + '|' + cub + '|' + ccub + '|' + cmel;
+      elecciones['Mueblería'] = { nombre: [dist, elec, cub + ' ' + ccub, 'Melamina ' + cmel].join(' / '), precio: step.lookup[key] || 0 };
     }
   });
+  if (modeloActivo === 'flex' && flexBranch) {
+    elecciones['Ventanas'] = { nombre: flexBranch === 'ventana' ? 'Con ventanas' : 'Sin ventanas', precio: 0 };
+  }
 
-  const payload = {
-    nombre, email, telefono,
-    modelo: 'Pro',
-    precio_total: calcGT(),
-    elecciones: JSON.stringify(elecciones),
-    fecha: new Date().toLocaleString('es-CL'),
-  };
-
+  const payload = { nombre: nombre, email: email, telefono: telefono, modelo: modelNombre, precio_total: calcGT(), elecciones: JSON.stringify(elecciones), fecha: new Date().toLocaleString('es-CL') };
   const btn = document.getElementById('btn-submit');
   const errEl = document.getElementById('submit-error');
   btn.disabled = true; btn.textContent = 'Enviando…'; errEl.style.display = 'none';
-
   if (!SHEETS_URL) { console.log('Payload:', payload); showSuccess(); return; }
-
   fetch(SHEETS_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-    .then(() => showSuccess())
-    .catch(() => { btn.disabled = false; btn.textContent = 'Enviar presupuesto →'; errEl.textContent = 'Hubo un problema al enviar. Intenta de nuevo.'; errEl.style.display = 'block'; });
+    .then(function() { showSuccess(); })
+    .catch(function() { btn.disabled = false; btn.textContent = 'Enviar presupuesto →'; errEl.textContent = 'Hubo un problema. Intenta de nuevo.'; errEl.style.display = 'block'; });
 }
 
+// Toast
 let toastTimeout = null;
 function showOrderMessage() {
   const toast = document.getElementById('order-toast');
   toast.classList.add('visible');
   if (toastTimeout) clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => toast.classList.remove('visible'), 3500);
+  toastTimeout = setTimeout(function() { toast.classList.remove('visible'); }, 3500);
 }
 
+// Success
 function showSuccess() {
   const main = document.getElementById('main-content');
-  main.querySelectorAll('.panel:not(#panel-welcome):not(.success-panel)').forEach(p => p.remove());
+  main.querySelectorAll('.panel:not(#panel-welcome):not(.success-panel)').forEach(function(p) { p.remove(); });
   document.getElementById('panel-welcome').style.display = 'none';
   document.getElementById('sidebar-steps').style.opacity = '0.35';
   document.getElementById('success-panel').classList.add('active');
@@ -1188,47 +1000,35 @@ function showSuccess() {
   document.getElementById('hdr-step').textContent = '';
 }
 
-/* ═══════════════════════════════════════
-   PLACEHOLDER SVG
-═══════════════════════════════════════ */
-const PLACEHOLDER = `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"
-  stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="4" y="4" width="36" height="36" rx="3"/>
-  <circle cx="15" cy="15" r="4"/>
-  <path d="M4 30l10-10 8 8 6-6 12 12"/>
-</svg>`;
-
-/* ═══════════════════════════════════════
-   RENDER ALL
-═══════════════════════════════════════ */
+// Render all
 function renderAll() {
-  const landing = document.getElementById('landing');
+  const landing      = document.getElementById('landing');
   const configurador = document.getElementById('configurador');
   const welcomePanel = document.getElementById('panel-welcome');
 
   if (currentView === 'landing') {
-    landing.style.display = 'flex';
-    configurador.style.display = 'none';
+    landing.style.display = 'flex'; configurador.style.display = 'none';
     document.getElementById('btn-cambiar-modelo').classList.remove('visible');
   } else {
-    landing.style.display = 'none';
-    configurador.style.display = 'block';
+    landing.style.display = 'none'; configurador.style.display = 'block';
     document.getElementById('btn-cambiar-modelo').classList.add('visible');
   }
 
+  welcomePanel.classList.toggle('active', currentView === 'welcome');
+  welcomePanel.style.display = '';
+
   if (currentView === 'welcome') {
-    welcomePanel.classList.add('active');
-  } else {
-    welcomePanel.classList.remove('active');
+    document.getElementById('main-content').querySelectorAll('.panel:not(#panel-welcome):not(.success-panel)').forEach(function(p) { p.remove(); });
   }
-
-  if (currentView === 'step') renderStepView(VIEWS[currentStepIdx]);
-  if (currentView === 'contact') renderContactView();
-
+  if (currentView === 'step' && currentStepIdx < VIEWS.length) {
+    renderStepView(VIEWS[currentStepIdx]);
+  }
+  if (currentView === 'contact') {
+    renderContactView();
+  }
   if (currentView !== 'success') {
     document.getElementById('success-panel').classList.remove('active');
     document.getElementById('sidebar-steps').style.opacity = '1';
-    welcomePanel.style.display = '';
   }
 
   renderSidebar();
@@ -1236,63 +1036,44 @@ function renderAll() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-/* ═══════════════════════════════════════
-   INICIAR MODELO
-═══════════════════════════════════════ */
+// Iniciar modelo
 function iniciarModelo(modelo) {
-  modeloActivo = modelo;
-  sel = {};
-  currentStepIdx = 0;
-
-  if (modelo === 'pro') {
-    VIEWS = buildViews(PRO_STEPS);
-    document.getElementById('sidebar-model-label').textContent = 'Modelo Pro';
-    document.getElementById('welcome-badge').textContent = '● Modelo Pro';
+  modeloActivo = modelo; sel = {}; currentStepIdx = 0; flexBranch = null;
+  const nombre = modelo === 'pro' ? 'Pro' : modelo === 'esencial' ? 'Esencial' : 'Flex';
+  document.getElementById('sidebar-model-label').textContent = 'Modelo ' + nombre;
+  document.getElementById('welcome-badge').textContent = '● Modelo ' + nombre;
+  if (modelo === 'flex') {
+    VIEWS = [{ concepto: 'Ventanas', tipo: 'flex_ventana_choice', step: null }];
+  } else {
+    VIEWS = buildViews(MODEL_DATA[modelo] || []);
   }
-  // Esencial y Flex: pendiente
-
   currentView = 'welcome';
   document.getElementById('success-panel').classList.remove('active');
   renderAll();
 }
 
 function volverALanding() {
-  currentView = 'landing';
-  modeloActivo = null;
-  sel = {};
+  currentView = 'landing'; modeloActivo = null; sel = {}; flexBranch = null;
   document.getElementById('progress-fill').style.width = '0%';
   document.getElementById('hdr-step').textContent = '';
   renderAll();
 }
 
-/* ═══════════════════════════════════════
-   EVENTOS
-═══════════════════════════════════════ */
-document.querySelectorAll('.model-card').forEach(card => {
-  card.addEventListener('click', () => {
-    const m = card.dataset.model;
-    if (m === 'pro') {
-      iniciarModelo(m);
-    } else {
-      // Esencial y Flex: próximamente
-      alert('Este modelo estará disponible próximamente.');
-    }
-  });
+// Events
+document.querySelectorAll('.model-card').forEach(function(card) {
+  card.addEventListener('click', function() { iniciarModelo(card.dataset.model); });
 });
-
 document.getElementById('btn-cambiar-modelo').addEventListener('click', volverALanding);
 document.getElementById('btn-volver-landing').addEventListener('click', volverALanding);
-document.getElementById('btn-welcome-start').addEventListener('click', () => {
+document.getElementById('btn-welcome-start').addEventListener('click', function() {
   currentStepIdx = 0; currentView = 'step'; renderAll();
 });
 
-/* ═══════════════════════════════════════
-   URL PARAM ?modelo=pro
-═══════════════════════════════════════ */
+// URL param
 const urlParams = new URLSearchParams(window.location.search);
-const modeloParam = urlParams.get('modelo')?.toLowerCase();
-if (modeloParam === 'pro') {
-  iniciarModelo('pro');
+const modeloParam = urlParams.get('modelo') ? urlParams.get('modelo').toLowerCase() : null;
+if (modeloParam && ['pro', 'esencial', 'flex'].indexOf(modeloParam) !== -1) {
+  iniciarModelo(modeloParam);
 }
 </script>
 <div class="order-toast" id="order-toast">
