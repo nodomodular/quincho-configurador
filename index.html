@@ -913,14 +913,20 @@ function renderContactView() {
 
   steps.forEach(function(step, idx) {
     const concepto = step.concepto || ('Paso ' + (idx + 1));
-    const stepLabel = '<span class="summary-step-num">' + (idx + 1) + '</span>';
+    // step number inlined in HTML below
     if (step.tipo === 'simple') {
       const mi = sel[concepto + '_mat'];
       if (mi === undefined) return;
       const opt = step.opciones[mi];
       const ci = sel[concepto + '_col'];
       const colorText = opt.colors[0].color !== null && ci !== undefined ? ' / ' + opt.colors[ci].color : '';
-      resumenHTML += '<div class="summary-line"><span class="summary-line-label">' + stepLabel + concepto + '</span><span class="summary-line-val">' + opt.material + colorText + '</span></div>';
+      resumenHTML += '<div style="display:flex;align-items:center;padding:0.65rem 1.25rem;border-bottom:0.5px solid var(--border);gap:12px;">' +
+        '<div style="display:flex;align-items:center;gap:8px;min-width:120px;flex-shrink:0;">' +
+          '<span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--surface2);border:0.5px solid var(--border-strong);font-size:10px;font-weight:500;color:var(--muted);flex-shrink:0;">' + (idx+1) + '</span>' +
+          '<span style="font-size:12px;color:var(--muted);">' + concepto + '</span>' +
+        '</div>' +
+        '<span style="font-size:13px;font-weight:500;color:var(--text);flex:1;">' + opt.material + colorText + '</span>' +
+      '</div>';
     } else if (step.tipo === 'muebleria') {
       const d = sel['m_dist'] !== undefined ? sel['m_dist'] : 0;
       const e = sel['m_elec'], c = sel['m_cub'], cc = sel['m_ccub'], cm = sel['m_mel'];
@@ -931,14 +937,26 @@ function renderContactView() {
         cm !== undefined ? 'Melamina ' + step.colores_melamina[cm] : null,
       ].filter(Boolean);
       if (parts.length) {
-        resumenHTML += '<div class="summary-line"><span class="summary-line-label">' + stepLabel + 'Mueblería</span><span class="summary-line-val">' + parts.join(' / ') + '</span></div>';
+        resumenHTML += '<div style="display:flex;align-items:center;padding:0.65rem 1.25rem;border-bottom:0.5px solid var(--border);gap:12px;">' +
+          '<div style="display:flex;align-items:center;gap:8px;min-width:120px;flex-shrink:0;">' +
+            '<span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--surface2);border:0.5px solid var(--border-strong);font-size:10px;font-weight:500;color:var(--muted);flex-shrink:0;">' + (idx+1) + '</span>' +
+            '<span style="font-size:12px;color:var(--muted);">Mueblería</span>' +
+          '</div>' +
+          '<span style="font-size:13px;font-weight:500;color:var(--text);flex:1;line-height:1.4;">' + parts.join(' · ') + '</span>' +
+        '</div>';
       }
     }
   });
 
   if (modeloActivo === 'flex' && flexBranch) {
     const ventanaLabel = flexBranch === 'ventana' ? 'Con ventanas' : 'Sin ventanas';
-    resumenHTML = '<div class="summary-line"><span class="summary-line-label"><span class="summary-step-num">✦</span>Ventanas</span><span class="summary-line-val">' + ventanaLabel + '</span></div>' + resumenHTML;
+    resumenHTML = '<div style="display:flex;align-items:center;padding:0.65rem 1.25rem;border-bottom:0.5px solid var(--border);gap:12px;">' +
+      '<div style="display:flex;align-items:center;gap:8px;min-width:120px;flex-shrink:0;">' +
+        '<span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--surface2);border:0.5px solid var(--border-strong);font-size:10px;font-weight:500;color:var(--muted);flex-shrink:0;">✦</span>' +
+        '<span style="font-size:12px;color:var(--muted);">Ventanas</span>' +
+      '</div>' +
+      '<span style="font-size:13px;font-weight:500;color:var(--text);flex:1;">' + ventanaLabel + '</span>' +
+    '</div>' + resumenHTML;
   }
 
   const panel = document.createElement('div'); panel.className = 'panel active';
@@ -946,13 +964,23 @@ function renderContactView() {
     '<div class="panel-eyebrow">Último paso</div>' +
     '<div class="panel-title">Finaliza tu configuración</div>' +
     '<div class="panel-subtitle">Tu quincho ' + modelNombre + ' está listo. Revisa tus elecciones y déjanos tus datos.</div>' +
-    '<div class="summary-card" style="margin-bottom:1.5rem"><div class="summary-card-title">Resumen de tu quincho</div>' +
-    (resumenHTML || '<div class="summary-line"><span class="summary-line-label" style="color:var(--muted)">Sin elecciones</span></div>') +
+    '<div style="background:var(--surface);border:0.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.5rem;">' +
+      '<div style="padding:0.9rem 1.25rem;border-bottom:0.5px solid var(--border);background:var(--surface2);">' +
+        '<div style="font-size:13px;font-weight:500;color:var(--text);">Resumen de tu quincho</div>' +
+        '<div style="font-size:11px;color:var(--muted);margin-top:2px;">Modelo ' + modelNombre + '</div>' +
+      '</div>' +
+    (resumenHTML || '<div style="padding:0.75rem 1.25rem;font-size:13px;color:var(--muted);">Sin elecciones registradas</div>') +
     '</div>' +
     '<div class="price-reveal">' +
       '<div class="price-reveal-left"><div class="pr-label">Precio estimado · Modelo ' + modelNombre + '</div><div class="pr-sub">Incluye materiales, mano de obra y terminaciones</div></div>' +
       '<div class="price-reveal-val">' + fmt(gt) + '</div>' +
     '</div>' +
+    '<div style="margin:2rem 0 1.25rem;display:flex;align-items:center;gap:12px;">' +
+      '<div style="flex:1;height:0.5px;background:var(--border);"></div>' +
+      '<span style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);white-space:nowrap;">Tus datos de contacto</span>' +
+      '<div style="flex:1;height:0.5px;background:var(--border);"></div>' +
+    '</div>' +
+    '<p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem;line-height:1.6;">Déjanos tus datos y te contactamos en menos de 24 horas para conversar sobre tu quincho.</p>' +
     '<div class="contact-form">' +
       '<div class="form-field"><label class="form-label">Nombre y apellido</label><input class="form-input" id="f-nombre" type="text" placeholder="Ej: Juan Pérez" autocomplete="name"><span class="form-error-msg" id="e-nombre">Ingresa tu nombre completo</span></div>' +
       '<div class="form-field"><label class="form-label">Correo electrónico</label><input class="form-input" id="f-email" type="email" placeholder="juan@correo.com" autocomplete="email"><span class="form-error-msg" id="e-email">Ingresa un correo válido</span></div>' +
