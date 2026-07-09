@@ -625,15 +625,8 @@ function buildViews(steps) {
       // Single combined view for material + colors
       views.push({ concepto: concepto, tipo: 'combined', step: step });
     } else if (step.tipo === 'muebleria') {
-      if (step.distribuciones.length > 1) {
-        views.push({ concepto: 'Mueblería', tipo: 'muebleria_dist', step: step });
-      } else {
-        sel['m_dist'] = 0;
-      }
-      views.push({ concepto: 'Mueblería', tipo: 'muebleria_electros', step: step });
-      views.push({ concepto: 'Mueblería', tipo: 'muebleria_cubierta', step: step });
-      views.push({ concepto: 'Mueblería', tipo: 'muebleria_color_cub', step: step });
-      views.push({ concepto: 'Mueblería', tipo: 'muebleria_melamina', step: step });
+      if (step.distribuciones.length === 1) sel['m_dist'] = 0;
+      views.push({ concepto: 'Mueblería', tipo: 'muebleria_combined', step: step });
     }
   });
   return views;
@@ -684,11 +677,14 @@ function viewDone(i) {
     if (opt.colors[0].color === null) return true;
     return sel[concepto + '_col'] !== undefined;
   }
-  if (v.tipo === 'muebleria_dist')      return sel['m_dist'] !== undefined || s.distribuciones.length === 1;
-  if (v.tipo === 'muebleria_electros')  return sel['m_elec'] !== undefined;
-  if (v.tipo === 'muebleria_cubierta')  return sel['m_cub']  !== undefined;
-  if (v.tipo === 'muebleria_color_cub') return sel['m_ccub'] !== undefined;
-  if (v.tipo === 'muebleria_melamina')  return sel['m_mel']  !== undefined;
+  if (v.tipo === 'muebleria_combined') {
+    if (s.distribuciones.length > 1 && sel['m_dist'] === undefined) return false;
+    if (sel['m_elec'] === undefined) return false;
+    if (sel['m_cub']  === undefined) return false;
+    if (sel['m_ccub'] === undefined) return false;
+    if (sel['m_mel']  === undefined) return false;
+    return true;
+  }
   return false;
 }
 function countDone() { return VIEWS.filter(function(_, i) { return viewDone(i); }).length; }
@@ -905,40 +901,80 @@ function renderStepView(v) {
       contentEl.appendChild(colorGrid);
     }
   }
-  else if (v.tipo === 'muebleria_dist') {
+  else if (v.tipo === 'muebleria_combined') {
     titleHTML = '<div class="panel-eyebrow">' + eyebrow + ' · Mueblería</div>' +
-      '<div class="panel-title">¿Cómo distribuyes la cocina?</div>' +
-      '<div class="panel-subtitle">Elige la distribución de los muebles dentro del quincho.</div>';
-    contentEl = buildCards(s.distribuciones.map(function(d) { return { label: d }; }), 'm_dist', function() { renderAll(); });
-  }
-  else if (v.tipo === 'muebleria_electros') {
-    const distIdx = sel['m_dist'] !== undefined ? sel['m_dist'] : 0;
-    const distStr = s.distribuciones[distIdx];
-    const availElec = (s.electros_por_dist && s.electros_por_dist[distStr]) ? s.electros_por_dist[distStr] : s.electros;
-    if (sel['m_elec'] !== undefined && availElec.indexOf(s.electros[sel['m_elec']]) === -1) { delete sel['m_elec']; }
-    titleHTML = '<div class="panel-eyebrow">' + eyebrow + ' · Mueblería</div>' +
-      '<div class="panel-title">¿Cuántos electrodomésticos?</div>' +
-      '<div class="panel-subtitle">Indica cuántos espacios para electrodomésticos necesitas.</div>';
-    contentEl = buildCards(availElec.map(function(e) { return { label: e }; }), 'm_elec', function() { renderAll(); });
-  }
-  else if (v.tipo === 'muebleria_cubierta') {
-    titleHTML = '<div class="panel-eyebrow">' + eyebrow + ' · Mueblería</div>' +
-      '<div class="panel-title">¿Qué tipo de cubierta?</div>' +
-      '<div class="panel-subtitle">La cubierta define la durabilidad y estética del mesón.</div>';
-    contentEl = buildCards(s.cubiertas.map(function(c) { return { label: c }; }), 'm_cub', function() { renderAll(); });
-  }
-  else if (v.tipo === 'muebleria_color_cub') {
-    const cubNombre = s.cubiertas[sel['m_cub']] || 'cubierta';
-    titleHTML = '<div class="panel-eyebrow">' + eyebrow + ' · Mueblería</div>' +
-      '<div class="panel-title">¿Qué color de ' + cubNombre + '?</div>' +
-      '<div class="panel-subtitle">Elige el color para la cubierta del mesón.</div>';
-    contentEl = buildCards(s.colores_cubierta.map(function(c) { return { label: c }; }), 'm_ccub', function() { renderAll(); });
-  }
-  else if (v.tipo === 'muebleria_melamina') {
-    titleHTML = '<div class="panel-eyebrow">' + eyebrow + ' · Mueblería</div>' +
-      '<div class="panel-title">¿Qué color de melamina?</div>' +
-      '<div class="panel-subtitle">Elige el color de la melamina de los muebles.</div>';
-    contentEl = buildCards(s.colores_melamina.map(function(c) { return { label: c }; }), 'm_mel', function() { renderAll(); });
+      '<div class="panel-title">Personaliza tu mueblería</div>' +
+      '<div class="panel-subtitle">Elige cada opción — las siguientes aparecen al completar la anterior.</div>';
+
+    contentEl = document.createElement('div');
+
+    function addMuebleriaSection(title, items, selKey, onSelect) {
+      const sec = document.createElement('div');
+      sec.style.cssText = 'margin-top:1.5rem;padding-top:1rem;border-top:0.5px solid var(--border);';
+      sec.innerHTML = '<div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:0.75rem;">' + title + '</div>';
+      const grid = document.createElement('div'); grid.className = 'options-grid';
+      items.forEach(function(item, i) {
+        const card = document.createElement('div');
+        card.className = 'opt-card opt-body-noimg' + (sel[selKey] === i ? ' selected' : '');
+        card.innerHTML = '<div class="opt-body opt-body-noimg"><div class="opt-name">' + item + '</div></div><div class="opt-check"></div>';
+        card.addEventListener('click', function() {
+          sel[selKey] = i;
+          onSelect(i);
+          renderAll();
+        });
+        grid.appendChild(card);
+      });
+      sec.appendChild(grid);
+      contentEl.appendChild(sec);
+    }
+
+    const d = sel['m_dist'];
+    const e = sel['m_elec'];
+    const c = sel['m_cub'];
+    const cc = sel['m_ccub'];
+
+    // 1. Distribución (solo si hay más de una)
+    if (s.distribuciones.length > 1) {
+      addMuebleriaSection('¿Cómo distribuyes la cocina?', s.distribuciones, 'm_dist', function() {
+        delete sel['m_elec']; delete sel['m_cub']; delete sel['m_ccub']; delete sel['m_mel'];
+      });
+    }
+
+    // 2. Electros — solo si dist seleccionada
+    if (d !== undefined || s.distribuciones.length === 1) {
+      const distIdx = sel['m_dist'] !== undefined ? sel['m_dist'] : 0;
+      const distStr = s.distribuciones[distIdx];
+      const availElec = (s.electros_por_dist && s.electros_por_dist[distStr]) ? s.electros_por_dist[distStr] : s.electros;
+      addMuebleriaSection('¿Cuántos electrodomésticos?', availElec, 'm_elec', function() {
+        delete sel['m_cub']; delete sel['m_ccub']; delete sel['m_mel'];
+      });
+    }
+
+    // 3. Cubierta — solo si electros seleccionado
+    if (e !== undefined) {
+      addMuebleriaSection('¿Qué tipo de cubierta?', s.cubiertas, 'm_cub', function() {
+        delete sel['m_ccub']; delete sel['m_mel'];
+      });
+    }
+
+    // 4. Color cubierta — solo si cubierta seleccionada
+    if (c !== undefined) {
+      addMuebleriaSection('¿Qué color de ' + s.cubiertas[c] + '?', s.colores_cubierta, 'm_ccub', function() {
+        delete sel['m_mel'];
+      });
+    }
+
+    // 5. Melamina — solo si color cubierta seleccionado
+    if (cc !== undefined) {
+      addMuebleriaSection('¿Qué color de melamina?', s.colores_melamina, 'm_mel', function() {
+        // Todas las decisiones tomadas — auto-advance
+        setTimeout(function() {
+          if (currentStepIdx === VIEWS.length - 1) { currentView = 'contact'; }
+          else { currentStepIdx++; currentView = 'step'; }
+          renderAll();
+        }, 280);
+      });
+    }
   }
 
   panel.innerHTML = titleHTML;
