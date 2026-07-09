@@ -622,9 +622,8 @@ function buildViews(steps) {
   steps.forEach(function(step) {
     const concepto = step.concepto || ('Paso ' + step.paso);
     if (step.tipo === 'simple') {
-      views.push({ concepto: concepto, tipo: 'material', step: step });
-      if (step.opciones.some(function(o) { return o.colors[0].color !== null; }))
-        views.push({ concepto: concepto, tipo: 'color', step: step });
+      // Single combined view for material + colors
+      views.push({ concepto: concepto, tipo: 'combined', step: step });
     } else if (step.tipo === 'muebleria') {
       if (step.distribuciones.length > 1) {
         views.push({ concepto: 'Mueblería', tipo: 'muebleria_dist', step: step });
@@ -678,10 +677,11 @@ function viewDone(i) {
   if (v.tipo === 'flex_ventana_choice') return flexBranch !== null;
   const s = v.step;
   const concepto = s ? (s.concepto || ('paso' + s.paso)) : '';
-  if (v.tipo === 'material') return sel[concepto + '_mat'] !== undefined;
-  if (v.tipo === 'color') {
-    const mi = sel[concepto + '_mat']; if (mi === undefined) return false;
-    if (s.opciones[mi].colors[0].color === null) return true;
+  if (v.tipo === 'combined') {
+    const mi = sel[concepto + '_mat'];
+    if (mi === undefined) return false;
+    const opt = s.opciones[mi];
+    if (opt.colors[0].color === null) return true;
     return sel[concepto + '_col'] !== undefined;
   }
   if (v.tipo === 'muebleria_dist')      return sel['m_dist'] !== undefined || s.distribuciones.length === 1;
@@ -828,32 +828,82 @@ function renderStepView(v) {
   const eyebrow = 'Paso ' + (currentStepIdx + 1) + ' de ' + VIEWS.length;
   let titleHTML = ''; let contentEl = null;
 
-  if (v.tipo === 'material') {
+  if (v.tipo === 'combined') {
+    const matIdx = sel[concepto + '_mat'];
     titleHTML = '<div class="panel-eyebrow">' + eyebrow + ' · ' + concepto + '</div>' +
       '<div class="panel-title">¿Qué ' + concepto.toLowerCase() + ' prefieres?</div>' +
-      '<div class="panel-subtitle">Elige el material que mejor se adapte a tu estilo.</div>';
-    contentEl = buildCards(s.opciones.map(function(o) { return { label: o.material }; }), concepto + '_mat', function() {
-      delete sel[concepto + '_col'];
-      // Check if next view is color for this concepto — if so advance to it
-      const nextV = VIEWS[currentStepIdx + 1];
-      if (nextV && nextV.tipo === 'color' && nextV.concepto === concepto) {
-        setTimeout(function() { currentStepIdx++; currentView = 'step'; renderAll(); }, 280);
-      } else {
-        // No color step (e.g. Parrilla, Ventana) — advance normally
-        setTimeout(function() {
-          if (currentStepIdx === VIEWS.length - 1) { currentView = 'contact'; }
-          else { currentStepIdx++; currentView = 'step'; }
-          renderAll();
-        }, 280);
+      '<div class="panel-subtitle">Elige el material y color que mejor se adapten a tu estilo.</div>';
+
+    // Material cards — no auto advance, just show colors below
+    const matItems = s.opciones.map(function(o) { return { label: o.material }; });
+    contentEl = document.createElement('div');
+
+    const matGrid = document.createElement('div'); matGrid.className = 'options-grid';
+    s.opciones.forEach(function(opt, i) {
+      const matInfo = MATERIALES[opt.material];
+      var extraHTML = '';
+      if (matInfo) {
+        const caracts = matInfo.caracteristicas.map(function(c, ci) {
+          return (ci > 0 ? '<span class="opt-caract-sep">•</span>' : '') + c;
+        }).join('');
+        extraHTML = '<div class="opt-estrella">' + matInfo.estrella + '</div><div class="opt-caracts">' + caracts + '</div>';
       }
-    }, false);
-  }
-  else if (v.tipo === 'color') {
-    const mi = sel[concepto + '_mat']; const opt = mi !== undefined ? s.opciones[mi] : null;
-    titleHTML = '<div class="panel-eyebrow">' + eyebrow + ' · ' + concepto + '</div>' +
-      '<div class="panel-title">¿Qué color para ' + (opt ? opt.material : '—') + '?</div>' +
-      '<div class="panel-subtitle">Elige el color que mejor combine con tu espacio.</div>';
-    contentEl = buildCards(opt ? opt.colors.map(function(c) { return { label: c.color, imagen: c.imagen || null }; }) : [], concepto + '_col', function() { renderAll(); });
+      var imgSrc = matInfo && matInfo.imagen ? matInfo.imagen : null;
+      var hasImg = imgSrc ? true : false;
+      const card = document.createElement('div');
+      card.className = 'opt-card' + (matIdx === i ? ' selected' : '');
+      card.innerHTML = (hasImg ? '<div class="opt-img"><img src="' + imgSrc + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>' : '') +
+        '<div class="opt-body' + (hasImg ? '' : ' opt-body-noimg') + '">' +
+        '<div class="opt-name">' + opt.material + '</div>' + extraHTML +
+        '</div><div class="opt-check"></div>';
+      card.addEventListener('click', function() {
+        sel[concepto + '_mat'] = i;
+        delete sel[concepto + '_col'];
+        // No colors? auto-advance
+        if (opt.colors[0].color === null) {
+          setTimeout(function() {
+            if (currentStepIdx === VIEWS.length - 1) { currentView = 'contact'; }
+            else { currentStepIdx++; currentView = 'step'; }
+            renderAll();
+          }, 280);
+        } else {
+          renderAll();
+        }
+      });
+      matGrid.appendChild(card);
+    });
+    contentEl.appendChild(matGrid);
+
+    // Color section — only if material selected and has colors
+    if (matIdx !== undefined && s.opciones[matIdx].colors[0].color !== null) {
+      const opt = s.opciones[matIdx];
+      const colorHeader = document.createElement('div');
+      colorHeader.style.cssText = 'margin:1.75rem 0 0.75rem;padding-bottom:0.5rem;border-bottom:0.5px solid var(--border);';
+      colorHeader.innerHTML = '<div style="font-size:14px;font-weight:500;color:var(--text);">¿Qué color prefieres para ' + opt.material + '?</div>';
+      contentEl.appendChild(colorHeader);
+
+      const colorGrid = document.createElement('div'); colorGrid.className = 'options-grid';
+      opt.colors.forEach(function(c, ci) {
+        const isSelected = sel[concepto + '_col'] === ci;
+        const card = document.createElement('div');
+        card.className = 'opt-card' + (isSelected ? ' selected' : '');
+        const hasImg = c.imagen ? true : false;
+        card.innerHTML = (hasImg ? '<div class="opt-img"><img src="' + c.imagen + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>' : '') +
+          '<div class="opt-body' + (hasImg ? '' : ' opt-body-noimg') + '">' +
+          '<div class="opt-name">' + c.color + '</div></div><div class="opt-check"></div>';
+        card.addEventListener('click', function() {
+          sel[concepto + '_col'] = ci;
+          renderAll();
+          setTimeout(function() {
+            if (currentStepIdx === VIEWS.length - 1) { currentView = 'contact'; }
+            else { currentStepIdx++; currentView = 'step'; }
+            renderAll();
+          }, 280);
+        });
+        colorGrid.appendChild(card);
+      });
+      contentEl.appendChild(colorGrid);
+    }
   }
   else if (v.tipo === 'muebleria_dist') {
     titleHTML = '<div class="panel-eyebrow">' + eyebrow + ' · Mueblería</div>' +
