@@ -603,6 +603,13 @@ const MODEL_DATA = {
 
 const MATERIALES = {"WPC Tabla Extruido": {"estrella": "Estilo atemporal", "caracteristicas": ["Apariencia madera", "Diseño versátil", "Fácil de mantener", "Larga vida útil"]}, "Deck WPC": {"estrella": "Ideal para exterior", "caracteristicas": ["Antideslizante", "Alta resistencia humedad", "Pisada confortable", "Larga vida útil"]}, "Pino Horizontal": {"estrella": "Ambiente acogedor", "caracteristicas": ["Aspecto natural", "Veta auténtica", "Buena aislación", "Fácil de renovar"]}, "Volcanita": {"estrella": "Terminación impecable", "caracteristicas": ["Superficie lisa", "Diseño versátil", "Buena aislación", "Fácil de pintar"]}, "Pino Machimbrado": {"estrella": "Calidez natural", "caracteristicas": ["Veta auténtica", "Ambiente cálido", "Buena aislación", "Fácil de renovar"]}, "WPC tabla": {"estrella": "Elegancia minimalista", "caracteristicas": ["Apariencia madera", "Líneas limpias", "Larga vida útil", "Color duradero"]}, "Metálico": {"estrella": "Estilo industrial", "caracteristicas": ["Diseño moderno", "Muy resistente", "Limpieza sencilla", "Color duradero"]}, "Cuarzo": {"estrella": "Elegancia premium", "caracteristicas": ["Muy resistente", "Superficie higiénica", "Limpieza sencilla", "Acabado premium"]}, "Porcelanato antideslizante": {"estrella": "Seguridad al caminar", "caracteristicas": ["Superficie antideslizante", "Limpieza sencilla", "Alta resistencia desgaste", "Gran variedad"]}, "WPC ranurado coexstruido": {"estrella": "Diseño arquitectónico", "caracteristicas": ["Textura ranurada", "Alta resistencia humedad", "Color duradero", "Fácil de mantener"]}, "Porcelanato": {"estrella": "Gran versatilidad", "caracteristicas": ["Alta resistencia calor", "Muy resistente", "Gran variedad", "Acabado moderno"]}, "Ranurado PVC": {"estrella": "Practicidad diaria", "caracteristicas": ["Diseño moderno", "Limpieza sencilla", "Alta resistencia humedad", "Fácil de mantener"]}, "Pino Vertical": {"estrella": "Belleza natural", "caracteristicas": ["Veta auténtica", "Ambiente cálido", "Buena aislación", "Fácil de renovar"]}, "WPC ranurado": {"estrella": "Diseño moderno", "caracteristicas": ["Apariencia madera", "Textura elegante", "Limpieza sencilla", "Fácil de mantener"]}, "Pino": {"estrella": "Calidez al caminar", "caracteristicas": ["Pisada confortable", "Aspecto natural", "Ambiente cálido", "Fácil de renovar"]}, "Pino vertical": {"estrella": "Belleza natural", "caracteristicas": ["Veta auténtica", "Ambiente cálido", "Buena aislación", "Fácil de renovar"]}};
 
+// Optimize Cloudinary URLs for card display
+function optimizeImg(url) {
+  if (!url || url.indexOf('res.cloudinary.com') === -1) return url;
+  // Insert transformation params after /upload/
+  return url.replace('/upload/', '/upload/w_400,h_300,c_fill,q_auto,f_auto/');
+}
+
 const PLACEHOLDER = `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"
   stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
   <rect x="4" y="4" width="36" height="36" rx="3"/>
@@ -764,11 +771,11 @@ function buildCards(items, selKey, onChange, autoAdvance) {
     } else if (item.sub) {
       extraHTML = '<div class="opt-desc">' + item.sub + '</div>';
     }
-    var imgSrc = item.imagen ? item.imagen : (matInfo && matInfo.imagen ? matInfo.imagen : null);
+    var imgSrc = item.imagen ? optimizeImg(item.imagen) : (matInfo && matInfo.imagen ? optimizeImg(matInfo.imagen) : null);
     var hasImg = imgSrc ? true : false;
     const card = document.createElement('div');
     card.className = 'opt-card' + (sel[selKey] === i ? ' selected' : '');
-    card.innerHTML = (hasImg ? '<div class="opt-img"><img src="' + imgSrc + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>' : '') +
+    card.innerHTML = (hasImg ? '<div class="opt-img"><img src="' + optimizeImg(imgSrc) + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>' : '') +
       '<div class="opt-body' + (hasImg ? '' : ' opt-body-noimg') + '">' +
       '<div class="opt-name">' + item.label + '</div>' + extraHTML +
       '</div><div class="opt-check"></div>';
@@ -844,11 +851,11 @@ function renderStepView(v) {
         }).join('');
         extraHTML = '<div class="opt-estrella">' + matInfo.estrella + '</div><div class="opt-caracts">' + caracts + '</div>';
       }
-      var imgSrc = matInfo && matInfo.imagen ? matInfo.imagen : null;
+      var imgSrc = matInfo && matInfo.imagen ? optimizeImg(matInfo.imagen) : null;
       var hasImg = imgSrc ? true : false;
       const card = document.createElement('div');
       card.className = 'opt-card' + (matIdx === i ? ' selected' : '');
-      card.innerHTML = (hasImg ? '<div class="opt-img"><img src="' + imgSrc + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>' : '') +
+      card.innerHTML = (hasImg ? '<div class="opt-img"><img src="' + optimizeImg(imgSrc) + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>' : '') +
         '<div class="opt-body' + (hasImg ? '' : ' opt-body-noimg') + '">' +
         '<div class="opt-name">' + opt.material + '</div>' + extraHTML +
         '</div><div class="opt-check"></div>';
@@ -884,7 +891,7 @@ function renderStepView(v) {
         const card = document.createElement('div');
         card.className = 'opt-card' + (isSelected ? ' selected' : '');
         const hasImg = c.imagen ? true : false;
-        card.innerHTML = (hasImg ? '<div class="opt-img"><img src="' + c.imagen + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>' : '') +
+        card.innerHTML = (hasImg ? '<div class="opt-img"><img src="' + optimizeImg(c.imagen) + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>' : '') +
           '<div class="opt-body' + (hasImg ? '' : ' opt-body-noimg') + '">' +
           '<div class="opt-name">' + c.color + '</div></div><div class="opt-check"></div>';
         card.addEventListener('click', function() {
