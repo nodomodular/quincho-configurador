@@ -820,7 +820,7 @@ function buildCards(items, selKey, onChange, autoAdvance) {
     var hasImg = imgSrc ? true : false;
     const card = document.createElement('div');
     card.className = 'opt-card' + (sel[selKey] === i ? ' selected' : '');
-    card.innerHTML = (hasImg ? '<div class="opt-img"><img src="' + optimizeImg(imgSrc) + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>' : '') +
+    card.innerHTML = (hasImg ? '<div class="opt-img"><img src="' + optimizeImg(imgSrc) + '" loading="lazy" style="width:100%;height:100%;object-fit:contain;background:#f5f3ef;"></div>' : '') +
       '<div class="opt-body' + (hasImg ? '' : ' opt-body-noimg') + '">' +
       '<div class="opt-name">' + item.label + '</div>' + extraHTML +
       '</div><div class="opt-check"></div>';
@@ -900,7 +900,7 @@ function renderStepView(v) {
       var hasImg = imgSrc ? true : false;
       const card = document.createElement('div');
       card.className = 'opt-card' + (matIdx === i ? ' selected' : '');
-      card.innerHTML = (hasImg ? '<div class="opt-img"><img src="' + optimizeImg(imgSrc) + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>' : '') +
+      card.innerHTML = (hasImg ? '<div class="opt-img"><img src="' + optimizeImg(imgSrc) + '" loading="lazy" style="width:100%;height:100%;object-fit:contain;background:#f5f3ef;"></div>' : '') +
         '<div class="opt-body' + (hasImg ? '' : ' opt-body-noimg') + '">' +
         '<div class="opt-name">' + opt.material + '</div>' + extraHTML +
         '</div><div class="opt-check"></div>';
@@ -937,7 +937,7 @@ function renderStepView(v) {
         card.className = 'opt-card' + (isSelected ? ' selected' : '');
         const hasImg = c.imagen ? true : false;
         var deltaBadge = fmtDelta(c.delta) ? '<div class="delta-badge">' + fmtDelta(c.delta) + '</div>' : '';
-        card.innerHTML = (hasImg ? '<div class="opt-img"><img src="' + optimizeImg(c.imagen) + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>' : '') +
+        card.innerHTML = (hasImg ? '<div class="opt-img"><img src="' + optimizeImg(c.imagen) + '" loading="lazy" style="width:100%;height:100%;object-fit:contain;background:#f5f3ef;"></div>' : '') +
           '<div class="opt-body' + (hasImg ? '' : ' opt-body-noimg') + '">' +
           '<div class="opt-name">' + c.color + '</div></div>' +
           deltaBadge + '<div class="opt-check"></div>';
