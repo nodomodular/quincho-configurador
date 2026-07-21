@@ -415,6 +415,17 @@ main { padding: 2.5rem 3rem; max-width: 800px; }
 }
 .btn-volver:hover { border-color: var(--border-strong); color: var(--text); }
 
+/* ── DIST GRID ── */
+.dist-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.dist-card-full {
+  grid-column: 1 / -1;
+}
+.dist-card .opt-img { border-radius: 0; }
+
 /* ── DELTA BADGE ── */
 .delta-badge {
   position: absolute;
@@ -607,6 +618,21 @@ main { padding: 2.5rem 3rem; max-width: 800px; }
 
 <script>
 const ESTRUCTURA_COSTOS = {"Esencial": {"cf": 5716302, "margen": 0.45}, "Flex sin ventana": {"cf": 6502864, "margen": 0.5}, "Flex con ventana": {"cf": 9132864, "margen": 0.47}, "Pro": {"cf": 8778516, "margen": 0.47}};
+
+const DIST_CONFIG = {
+  'En I': {
+    imagen: 'https://res.cloudinary.com/jxrth5db/image/upload/w_800,c_fill,q_auto,f_auto/v1784604458/Cenital_en_I_wgiqxn.png',
+    descripcion: 'Usamos el ancho completo del módulo'
+  },
+  'En L': {
+    imagen: 'https://res.cloudinary.com/jxrth5db/image/upload/w_800,c_fill,q_auto,f_auto/v1784604458/Cenital_en_L_prueba_kzlzth.png',
+    descripcion: 'Usamos el ancho completo del módulo y parte del largo'
+  },
+  'En C': {
+    imagen: 'https://res.cloudinary.com/jxrth5db/image/upload/w_800,c_fill,q_auto,f_auto/v1784604459/Cenital_en_C_prueba_l7bkg4.png',
+    descripcion: 'Usamos el ancho completo del módulo y parte del largo para terminar en una mesa para 5 personas'
+  }
+};
 
 const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzUXDVWeLHBBOc3q6pHjzCcaJnqgTxOKAAqu8wnUvnd95WUiXZxCboHk3OiHUZkQLxp/exec';
 
@@ -962,17 +988,28 @@ function renderStepView(v) {
 
     contentEl = document.createElement('div');
 
-    function addMuebleriaSection(title, items, selKey, onSelect, deltas) {
+    function addMuebleriaSection(title, items, selKey, onSelect, deltas, isDist) {
       const sec = document.createElement('div');
       sec.style.cssText = 'margin-top:1.5rem;padding-top:1rem;border-top:0.5px solid var(--border);';
       sec.innerHTML = '<div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:0.75rem;">' + title + '</div>';
-      const grid = document.createElement('div'); grid.className = 'options-grid';
+      const grid = document.createElement('div');
+      grid.className = isDist ? 'dist-grid' : 'options-grid';
       items.forEach(function(item, i) {
         const card = document.createElement('div');
-        card.className = 'opt-card opt-body-noimg' + (sel[selKey] === i ? ' selected' : '');
         var mDelta = (deltas && deltas[i]) ? fmtDelta(deltas[i]) : null;
         var mBadge = mDelta ? '<div class="delta-badge">' + mDelta + '</div>' : '';
-        card.innerHTML = '<div class="opt-body opt-body-noimg"><div class="opt-name">' + item + '</div></div>' + mBadge + '<div class="opt-check"></div>';
+        if (isDist && DIST_CONFIG[item]) {
+          var cfg = DIST_CONFIG[item];
+          var isFullWidth = item === 'En C';
+          card.className = 'opt-card dist-card' + (isFullWidth ? ' dist-card-full' : '') + (sel[selKey] === i ? ' selected' : '');
+          card.innerHTML = '<div class="opt-img" style="height:140px;"><img src="' + cfg.imagen + '" loading="lazy" style="width:100%;height:100%;object-fit:contain;background:#f5f3ef;"></div>' +
+            '<div class="opt-body"><div class="opt-name">' + item + '</div>' +
+            '<div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4;">' + cfg.descripcion + '</div></div>' +
+            mBadge + '<div class="opt-check"></div>';
+        } else {
+          card.className = 'opt-card opt-body-noimg' + (sel[selKey] === i ? ' selected' : '');
+          card.innerHTML = '<div class="opt-body opt-body-noimg"><div class="opt-name">' + item + '</div></div>' + mBadge + '<div class="opt-check"></div>';
+        }
         card.addEventListener('click', function() {
           sel[selKey] = i;
           onSelect(i);
@@ -993,7 +1030,7 @@ function renderStepView(v) {
     if (s.distribuciones.length > 1) {
       addMuebleriaSection('¿Cómo distribuyes la cocina?', s.distribuciones, 'm_dist', function() {
         delete sel['m_elec']; delete sel['m_cub']; delete sel['m_ccub']; delete sel['m_mel'];
-      });
+      }, null, true);
     }
 
     // 2. Electros — solo si dist seleccionada
