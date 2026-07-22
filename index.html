@@ -1021,11 +1021,11 @@ function renderStepView(v) {
         // Image display
         var selectedDist = sel[selKey] !== undefined ? items[sel[selKey]] : items[0];
         var imgCard = document.createElement('div');
-        imgCard.style.cssText = 'border:0.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px;background:#f5f3ef;';
+        imgCard.style.cssText = 'border:0.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px;';
         var imgEl = document.createElement('img');
         imgEl.id = 'dist-cenital-img';
         imgEl.src = DIST_CONFIG[selectedDist] ? DIST_CONFIG[selectedDist].imagen : '';
-        imgEl.style.cssText = 'width:100%;height:200px;object-fit:contain;display:block;';
+        imgEl.style.cssText = 'width:100%;height:260px;object-fit:cover;display:block;';
         imgCard.appendChild(imgEl);
         sec.appendChild(imgCard);
 
