@@ -821,7 +821,7 @@ function renderSidebar() {
     div.append(num, lbl);
     div.addEventListener('click', function() {
       if (locked) { showOrderMessage(); return; }
-      currentStepIdx = item.firstViewIdx; currentView = 'step'; renderAll();
+      currentStepIdx = item.firstViewIdx; currentView = 'step'; window._scrollToTop = true; renderAll();
     });
     timeline.appendChild(div);
   });
@@ -839,7 +839,7 @@ function renderSidebar() {
   fin.append(finIcon, finLbl);
   fin.addEventListener('click', function() {
     if (!allDone) { showOrderMessage(); return; }
-    currentView = 'contact'; renderAll();
+    currentView = 'contact'; window._scrollToTop = true; renderAll();
   });
   el.appendChild(fin);
 }
@@ -955,7 +955,7 @@ function renderStepView(v) {
           setTimeout(function() {
             if (currentStepIdx === VIEWS.length - 1) { currentView = 'contact'; }
             else { currentStepIdx++; currentView = 'step'; }
-            renderAll();
+            window._scrollToTop = true; renderAll();
           }, 280);
         } else {
           renderAll();
@@ -990,7 +990,7 @@ function renderStepView(v) {
           setTimeout(function() {
             if (currentStepIdx === VIEWS.length - 1) { currentView = 'contact'; }
             else { currentStepIdx++; currentView = 'step'; }
-            renderAll();
+            window._scrollToTop = true; renderAll();
           }, 280);
         });
         colorGrid.appendChild(card);
@@ -1150,7 +1150,7 @@ function renderStepView(v) {
   if (currentStepIdx > 0) {
     const btns = document.createElement('div'); btns.className = 'nav-btns';
     const back = document.createElement('button'); back.className = 'btn-back'; back.textContent = '← Atrás';
-    back.addEventListener('click', function() { currentStepIdx--; currentView = 'step'; renderAll(); });
+    back.addEventListener('click', function() { currentStepIdx--; currentView = 'step'; window._scrollToTop = true; renderAll(); });
     btns.appendChild(back); panel.appendChild(btns);
   }
   main.insertBefore(panel, main.querySelector('.success-panel'));
@@ -1234,7 +1234,7 @@ function renderContactView() {
     '<div id="submit-error" style="font-size:12px;color:#8B2B2B;margin-top:0.75rem;display:none;"></div>';
 
   main.insertBefore(panel, main.querySelector('.success-panel'));
-  document.getElementById('btn-back-contact').addEventListener('click', function() { currentStepIdx = VIEWS.length - 1; currentView = 'step'; renderAll(); });
+  document.getElementById('btn-back-contact').addEventListener('click', function() { currentStepIdx = VIEWS.length - 1; currentView = 'step'; window._scrollToTop = true; renderAll(); });
   document.getElementById('btn-submit').addEventListener('click', handleSubmit);
 }
 
@@ -1348,7 +1348,7 @@ function renderAll() {
 
   renderSidebar();
   updateHeader();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (window._scrollToTop) { window.scrollTo({ top: 0, behavior: 'smooth' }); window._scrollToTop = false; }
 }
 
 // Iniciar modelo
@@ -1381,7 +1381,7 @@ document.querySelectorAll('.model-card').forEach(function(card) {
 document.getElementById('btn-cambiar-modelo').addEventListener('click', volverALanding);
 document.getElementById('btn-volver-landing').addEventListener('click', volverALanding);
 document.getElementById('btn-welcome-start').addEventListener('click', function() {
-  currentStepIdx = 0; currentView = 'step'; renderAll();
+  currentStepIdx = 0; currentView = 'step'; window._scrollToTop = true; renderAll();
 });
 
 // URL param
