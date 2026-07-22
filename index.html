@@ -1053,7 +1053,7 @@ function renderStepView(v) {
         card.addEventListener('click', function() {
           sel[selKey] = i;
           if (isDist) {
-            // Update image and description without full re-render
+            // Update image and description instantly
             var imgEl = document.getElementById('dist-cenital-img');
             var descEl = document.getElementById('dist-descripcion');
             if (imgEl && DIST_CONFIG[item]) imgEl.src = DIST_CONFIG[item].imagen;
@@ -1062,6 +1062,8 @@ function renderStepView(v) {
             grid.querySelectorAll('.dist-selector-btn').forEach(function(b) { b.classList.remove('selected'); });
             card.classList.add('selected');
             onSelect(i);
+            // Re-render to show next sections (electros, cubierta, etc.)
+            renderAll();
           } else {
             onSelect(i);
             renderAll();
