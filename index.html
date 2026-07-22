@@ -1028,13 +1028,6 @@ function renderStepView(v) {
         imgEl.style.cssText = 'width:100%;height:auto;object-fit:contain;display:block;';
         imgCard.appendChild(imgEl);
         sec.appendChild(imgCard);
-
-        // Description text
-        var descEl = document.createElement('div');
-        descEl.id = 'dist-descripcion';
-        descEl.style.cssText = 'font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5;min-height:32px;';
-        descEl.textContent = DIST_CONFIG[selectedDist] ? DIST_CONFIG[selectedDist].descripcion : '';
-        sec.appendChild(descEl);
       }
 
       const grid = document.createElement('div');
@@ -1072,6 +1065,17 @@ function renderStepView(v) {
         grid.appendChild(card);
       });
       sec.appendChild(grid);
+
+      // Description below buttons for distribution
+      if (isDist) {
+        var descEl = document.createElement('div');
+        descEl.id = 'dist-descripcion';
+        descEl.style.cssText = 'font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5;min-height:20px;';
+        var selectedDist = sel[selKey] !== undefined ? items[sel[selKey]] : null;
+        descEl.textContent = selectedDist && DIST_CONFIG[selectedDist] ? DIST_CONFIG[selectedDist].descripcion : '';
+        sec.appendChild(descEl);
+      }
+
       contentEl.appendChild(sec);
     }
 
