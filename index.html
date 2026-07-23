@@ -1077,18 +1077,17 @@ function renderStepView(v) {
             onSelect(i);
             renderAll();
           }
-          // Scroll to next section after render
+          // Scroll to last child of contentEl (the newly appeared section)
           setTimeout(function() {
-            var allSecs = contentEl.querySelectorAll('[data-sel-key]');
-            var found = false;
-            allSecs.forEach(function(s) {
-              if (found && !found.scrolled) {
-                found.scrolled = true;
-                s.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            var panel = document.querySelector('.panel.active');
+            if (panel) {
+              var secs = panel.querySelectorAll('[data-sel-key]');
+              if (secs.length > 0) {
+                var lastSec = secs[secs.length - 1];
+                lastSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }
-              if (s.dataset.selKey === selKey) found = s;
-            });
-          }, 80);
+            }
+          }, 100);
         });
         grid.appendChild(card);
       });
