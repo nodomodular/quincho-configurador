@@ -957,6 +957,13 @@ function renderStepView(v) {
           }, 280);
         } else {
           renderAll();
+          setTimeout(function() {
+            var colorSec = document.getElementById('color-section-' + concepto);
+            if (colorSec) {
+              var offset = colorSec.getBoundingClientRect().top + window.scrollY - 80;
+              window.scrollTo({ top: offset, behavior: 'smooth' });
+            }
+          }, 200);
         }
       });
       matGrid.appendChild(card);
@@ -967,6 +974,7 @@ function renderStepView(v) {
     if (matIdx !== undefined && s.opciones[matIdx].colors[0].color !== null) {
       const opt = s.opciones[matIdx];
       const colorHeader = document.createElement('div');
+      colorHeader.id = 'color-section-' + concepto;
       colorHeader.style.cssText = 'margin:1.75rem 0 0.75rem;padding-bottom:0.5rem;border-bottom:0.5px solid var(--border);';
       colorHeader.innerHTML = '<div style="font-size:14px;font-weight:500;color:var(--text);">¿Qué color prefieres para ' + opt.material + '?</div>';
       contentEl.appendChild(colorHeader);
