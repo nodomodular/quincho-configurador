@@ -1044,6 +1044,7 @@ function renderStepView(v) {
             var firstColor = Object.keys(imgsByCubierta[item])[0];
             if (firstColor) mImgUrl = optimizeImg(imgsByCubierta[item][firstColor]);
           }
+          console.log('[Muebleria img]', item, 'imgsByColor:', imgsByColor, 'imgsByCubierta:', imgsByCubierta, '=> url:', mImgUrl);
           if (mImgUrl) {
             card.className = 'opt-card' + (sel[selKey] === i ? ' selected' : '');
             card.innerHTML = '<div class="opt-img"><img src="' + mImgUrl + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>' +
