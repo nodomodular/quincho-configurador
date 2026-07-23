@@ -644,7 +644,7 @@ const DIST_CONFIG = {
     descripcion: 'Usamos el ancho completo del módulo y parte del largo'
   },
   'En C': {
-    imagen: 'https://res.cloudinary.com/jxrth5db/image/upload/w_800,c_fill,q_auto,f_auto/v1784772717/ChatGPT_Image_22_jul_2026_22_11_44_cnm8i5.png',
+    imagen: 'https://res.cloudinary.com/jxrth5db/image/upload/w_800,c_fill,q_auto,f_auto/v1784774539/ChatGPT_Image_22_jul_2026_22_41_20_zgcin0.png',
     descripcion: 'Usamos el ancho completo del módulo y parte del largo para terminar en una mesa para 5 personas'
   }
 };
@@ -1077,14 +1077,16 @@ function renderStepView(v) {
             onSelect(i);
             renderAll();
           }
-          // Scroll to last child of contentEl (the newly appeared section)
+          // Scroll to last section (newly appeared)
           setTimeout(function() {
             var panel = document.querySelector('.panel.active');
             if (panel) {
               var secs = panel.querySelectorAll('[data-sel-key]');
               if (secs.length > 0) {
                 var lastSec = secs[secs.length - 1];
-                lastSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                var rect = lastSec.getBoundingClientRect();
+                var offset = rect.top + window.scrollY - 80;
+                window.scrollTo({ top: offset, behavior: 'smooth' });
               }
             }
           }, 100);
