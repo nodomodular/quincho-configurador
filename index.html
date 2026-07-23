@@ -1051,7 +1051,15 @@ function renderStepView(v) {
               '<div class="opt-body"><div class="opt-name">' + item + '</div></div>' + mBadge + '<div class="opt-check"></div>';
           } else {
             card.className = 'opt-card opt-body-noimg' + (sel[selKey] === i ? ' selected' : '');
-            card.innerHTML = '<div class="opt-body opt-body-noimg"><div class="opt-name">' + item + '</div></div>' + mBadge + '<div class="opt-check"></div>';
+            var matInfoM = MATERIALES[item];
+            var extraM = '';
+            if (matInfoM) {
+              var caractsM = matInfoM.caracteristicas.map(function(c, ci) {
+                return (ci > 0 ? '<span class="opt-caract-sep">•</span>' : '') + c;
+              }).join('');
+              extraM = '<div class="opt-estrella">' + matInfoM.estrella + '</div><div class="opt-caracts">' + caractsM + '</div>';
+            }
+            card.innerHTML = '<div class="opt-body opt-body-noimg"><div class="opt-name">' + item + '</div>' + extraM + '</div>' + mBadge + '<div class="opt-check"></div>';
           }
         }
         card.addEventListener('click', function() {
