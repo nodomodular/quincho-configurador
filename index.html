@@ -1116,7 +1116,7 @@ function renderStepView(v) {
     if (e !== undefined) {
       addMuebleriaSection('¿Qué tipo de cubierta?', s.cubiertas, 'm_cub', function() {
         delete sel['m_ccub']; delete sel['m_mel'];
-      }, null, false, s.imagenes_cubierta);
+      });
     }
 
     // 4. Color cubierta — solo si cubierta seleccionada, filtrado por tipo
