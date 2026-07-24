@@ -661,9 +661,9 @@ const MODEL_DATA = {
 const MATERIALES = {"Pino Machimbrado": {"estrella": "Calidez natural", "caracteristicas": ["Veta auténtica", "Ambiente cálido", "Buena aislación", "Fácil de renovar"]}, "Ranurado PVC": {"estrella": "Practicidad diaria", "caracteristicas": ["Diseño moderno", "Limpieza sencilla", "Alta resistencia humedad", "Fácil de mantener"]}, "Metálico": {"estrella": "Estilo industrial", "caracteristicas": ["Diseño moderno", "Muy resistente", "Limpieza sencilla", "Color duradero"]}, "Pino Vertical": {"estrella": "Belleza natural", "caracteristicas": ["Veta auténtica", "Ambiente cálido", "Buena aislación", "Fácil de renovar"]}, "WPC ranurado": {"estrella": "Madera sin complicaciones", "caracteristicas": ["Apariencia madera", "Diseño moderno", "Alta resistencia humedad", "Color duradero"]}, "WPC Tabla": {"estrella": "Diseño contemporáneo", "caracteristicas": ["Apariencia madera", "Líneas limpias", "Larga vida útil", "Fácil de mantener"]}, "Pino Horizontal": {"estrella": "Ambiente acogedor", "caracteristicas": ["Aspecto natural", "Veta auténtica", "Buena aislación", "Fácil de renovar"]}, "WPC Ranurado": {"estrella": "Diseño moderno", "caracteristicas": ["Apariencia madera", "Textura elegante", "Limpieza sencilla", "Fácil de mantener"]}, "WPC tabla": {"estrella": "Elegancia minimalista", "caracteristicas": ["Apariencia madera", "Líneas limpias", "Larga vida útil", "Color duradero"]}, "Deck WPC": {"estrella": "Ideal para exterior", "caracteristicas": ["Antideslizante", "Alta resistencia humedad", "Pisada confortable", "Larga vida útil"]}, "Pino": {"estrella": "Calidez al caminar", "caracteristicas": ["Pisada confortable", "Aspecto natural", "Ambiente cálido", "Fácil de renovar"]}, "Cuarzo": {"estrella": "Elegancia premium", "caracteristicas": ["Muy resistente", "Superficie higiénica", "Limpieza sencilla", "Acabado premium"]}, "Porcelanato": {"estrella": "Gran versatilidad", "caracteristicas": ["Alta resistencia calor", "Muy resistente", "Gran variedad", "Acabado moderno"]}, "Porcelanato antideslizante": {"estrella": "Seguridad al caminar", "caracteristicas": ["Superficie antideslizante", "Limpieza sencilla", "Alta resistencia desgaste", "Gran variedad"]}, "Volcanita": {"estrella": "Terminación impecable", "caracteristicas": ["Superficie lisa", "Diseño versátil", "Buena aislación", "Fácil de pintar"]}, "WPC ranurado coexstruido": {"estrella": "Diseño arquitectónico", "caracteristicas": ["Textura ranurada", "Alta resistencia humedad", "Color duradero", "Fácil de mantener"]}, "WPC Tabla Extruido": {"estrella": "Estilo atemporal", "caracteristicas": ["Apariencia madera", "Diseño versátil", "Fácil de mantener", "Larga vida útil"]}};
 
 // Optimize Cloudinary URLs for card display
-function fmtDelta(delta) {
-  if (!delta || delta <= 0) return null;
-  return '+$' + Math.round(delta).toLocaleString('es-CL');
+function fmtPrecio(precio) {
+  if (!precio || precio <= 0) return null;
+  return '$' + Math.round(precio).toLocaleString('es-CL');
 }
 
 function optimizeImg(url) {
@@ -985,7 +985,7 @@ function renderStepView(v) {
         const card = document.createElement('div');
         card.className = 'opt-card' + (isSelected ? ' selected' : '');
         const hasImg = c.imagen ? true : false;
-        var deltaBadge = fmtDelta(c.delta) ? '<div class="delta-badge">' + fmtDelta(c.delta) + '</div>' : '';
+        var deltaBadge = fmtPrecio(c.precio) ? '<div class="delta-badge">' + fmtPrecio(c.precio) + '</div>' : '';
         card.innerHTML = (hasImg ? '<div class="opt-img"><img src="' + optimizeImg(c.imagen) + '" loading="lazy" style="width:100%;height:100%;object-fit:contain;background:#f5f3ef;"></div>' : '') +
           '<div class="opt-body' + (hasImg ? '' : ' opt-body-noimg') + '">' +
           '<div class="opt-name">' + c.color + '</div></div>' +
@@ -1040,7 +1040,7 @@ function renderStepView(v) {
       grid.className = isDist ? 'dist-btn-row' : 'options-grid';
       items.forEach(function(item, i) {
         const card = document.createElement('div');
-        var mDelta = (deltas && deltas[i]) ? fmtDelta(deltas[i]) : null;
+        var mDelta = (deltas && deltas[i]) ? fmtPrecio(deltas[i]) : null;
         var mBadge = mDelta ? '<div class="delta-badge">' + mDelta + '</div>' : '';
         if (isDist && DIST_CONFIG[item]) {
           card.className = 'dist-selector-btn' + (sel[selKey] === i ? ' selected' : '');
