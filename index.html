@@ -714,8 +714,8 @@ function getModelKey() {
   return null;
 }
 
-function calcDeltaTotal() {
-  let delta = 0;
+function calcSumElecciones() {
+  let sum = 0;
   getSteps().forEach(function(step) {
     const concepto = step.concepto || ('paso' + step.paso);
     if (step.tipo === 'simple') {
@@ -723,11 +723,10 @@ function calcDeltaTotal() {
       if (matIdx === undefined) return;
       const opt = step.opciones[matIdx];
       if (opt.colors[0].color === null) {
-        // No color — use delta from color object
-        delta += (opt.colors[0].delta || 0);
+        sum += opt.colors[0].precio || 0;
       } else {
         const ci = sel[concepto + '_col'];
-        if (ci !== undefined) delta += (opt.colors[ci].delta || 0);
+        if (ci !== undefined) sum += opt.colors[ci].precio || 0;
       }
     } else if (step.tipo === 'muebleria') {
       const d = sel['m_dist'] !== undefined ? sel['m_dist'] : 0;
@@ -740,20 +739,19 @@ function calcDeltaTotal() {
           ? step.colores_por_cubierta[cubNombre] : step.colores_cubierta;
         const colorCubStr = coloresFiltrados[cc] || step.colores_cubierta[cc] || '';
         const key = distStr + '|' + elecArr[e] + '|' + cubNombre + '|' + colorCubStr + '|' + step.colores_melamina[cm];
-        const precio = step.lookup[key] || 0;
-        delta += precio - (step.min_precio || 0);
+        sum += step.lookup[key] || 0;
       }
     }
   });
-  return delta;
+  return sum;
 }
 
 function calcGT() {
   const key = getModelKey();
   if (!key || !ESTRUCTURA_COSTOS[key]) return 0;
   const ec = ESTRUCTURA_COSTOS[key];
-  const delta = calcDeltaTotal();
-  return Math.round((ec.cf + delta) * (1 + ec.margen));
+  const sumElec = calcSumElecciones();
+  return Math.round((ec.cf + sumElec) * (1 + ec.margen));
 }
 function fmt(n) { return '$' + Math.round(n).toLocaleString('es-CL'); }
 
