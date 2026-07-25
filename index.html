@@ -730,7 +730,10 @@ function calcSumElecciones() {
       }
     } else if (step.tipo === 'muebleria') {
       const d = sel['m_dist'] !== undefined ? sel['m_dist'] : 0;
-      const e = sel['m_elec'], c = sel['m_cub'], cc = sel['m_ccub'], cm = sel['m_mel'];
+      const e = sel['m_elec'];
+    const cm = sel['m_mel'];
+    const c  = sel['m_cub'];
+    const cc = sel['m_ccub'];
       if (e !== undefined && c !== undefined && cc !== undefined && cm !== undefined) {
         const distStr = step.distribuciones[d];
         const elecArr = (step.electros_por_dist && step.electros_por_dist[distStr]) ? step.electros_por_dist[distStr] : step.electros;
@@ -1055,7 +1058,6 @@ function renderStepView(v) {
             var firstColor = Object.keys(imgsByCubierta[item])[0];
             if (firstColor) mImgUrl = optimizeImg(imgsByCubierta[item][firstColor]);
           }
-          console.log('[Muebleria img]', item, 'imgsByColor:', imgsByColor, 'imgsByCubierta:', imgsByCubierta, '=> url:', mImgUrl);
           if (mImgUrl) {
             card.className = 'opt-card' + (sel[selKey] === i ? ' selected' : '');
             card.innerHTML = '<div class="opt-img"><img src="' + mImgUrl + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>' +
@@ -1124,6 +1126,7 @@ function renderStepView(v) {
 
     const d = sel['m_dist'];
     const e = sel['m_elec'];
+    const cm = sel['m_mel'];
     const c = sel['m_cub'];
     const cc = sel['m_ccub'];
 
@@ -1144,54 +1147,36 @@ function renderStepView(v) {
       });
     }
 
-    // 3. Cubierta — solo si electros seleccionado
+    // 3. Melamina — solo si electros seleccionado
     if (e !== undefined) {
+      addMuebleriaSection('¿Qué color de melamina?', s.colores_melamina, 'm_mel', function() {
+        delete sel['m_cub']; delete sel['m_ccub'];
+      }, null, false, null, s.imagenes_melamina || {});
+    }
+
+    // 4. Cubierta — solo si melamina seleccionada
+    if (cm !== undefined) {
       addMuebleriaSection('¿Qué tipo de cubierta?', s.cubiertas, 'm_cub', function() {
-        delete sel['m_ccub']; delete sel['m_mel'];
+        delete sel['m_ccub'];
       });
     }
 
-    // 4. Color cubierta — solo si cubierta seleccionada, filtrado por tipo
+    // 5. Color cubierta — solo si cubierta seleccionada
     if (c !== undefined) {
-      const cubNombre = s.cubiertas[c];
-      const coloresFiltrados = (s.colores_por_cubierta && s.colores_por_cubierta[cubNombre])
-        ? s.colores_por_cubierta[cubNombre]
-        : s.colores_cubierta;
-      // Reset color selection when cubierta changes (m_ccub stores index into coloresFiltrados)
-      // We store the selected color string separately to validate across cubierta changes
+      var cubNombre = s.cubiertas[c];
+      var coloresFiltrados = (s.colores_por_cubierta && s.colores_por_cubierta[cubNombre])
+        ? s.colores_por_cubierta[cubNombre] : s.colores_cubierta;
       var imgsCub = (s.imagenes_cubierta && s.imagenes_cubierta[cubNombre]) ? s.imagenes_cubierta[cubNombre] : {};
       addMuebleriaSection('¿Qué color de ' + cubNombre + '?', coloresFiltrados, 'm_ccub', function() {
-        delete sel['m_mel'];
-      }, null, false, null, imgsCub);
-    }
-
-    // 5. Melamina — solo si color cubierta seleccionado
-    if (cc !== undefined) {
-      // Calculate delta per melamina option for QA badges
-      var melDeltas = null;
-      if (modeloActivo === 'esencial') {
-        const distIdx = sel['m_dist'] !== undefined ? sel['m_dist'] : 0;
-        const distStr = s.distribuciones[distIdx];
-        const elecArr = (s.electros_por_dist && s.electros_por_dist[distStr]) ? s.electros_por_dist[distStr] : s.electros;
-        const cubNombre = s.cubiertas[c];
-        const colFilt = (s.colores_por_cubierta && s.colores_por_cubierta[cubNombre]) ? s.colores_por_cubierta[cubNombre] : s.colores_cubierta;
-        const colorCubStr = colFilt[cc] || '';
-        const elecStr = elecArr[e] || '';
-        melDeltas = s.colores_melamina.map(function(mel) {
-          const key = distStr + '|' + elecStr + '|' + cubNombre + '|' + colorCubStr + '|' + mel;
-          const precio = s.lookup[key] || 0;
-          return Math.max(0, precio - (s.min_precio || 0));
-        });
-      }
-      addMuebleriaSection('¿Qué color de melamina?', s.colores_melamina, 'm_mel', function() {
         setTimeout(function() {
           if (currentStepIdx === VIEWS.length - 1) { currentView = 'contact'; }
           else { currentStepIdx++; currentView = 'step'; }
           renderAll();
         }, 280);
-      }, melDeltas, false, null, s.imagenes_melamina || {});
+      }, null, false, null, imgsCub);
     }
-  }
+
+  }  // end section block
 
   panel.innerHTML = titleHTML;
   if (contentEl) panel.appendChild(contentEl);
