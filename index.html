@@ -891,11 +891,16 @@ function renderStepView(v) {
       '<div class="panel-title">¿Con o sin ventanas?</div>' +
       '<div class="panel-subtitle">Esta elección define los materiales disponibles para tu quincho.</div>';
     const grid = document.createElement('div'); grid.className = 'options-grid';
-    [['Con ventanas', 'ventana'], ['Sin ventanas', 'sinventana']].forEach(function(pair) {
+    var FLEX_VENTANA_IMGS = {
+        'ventana':    'https://res.cloudinary.com/jxrth5db/image/upload/w_800,c_limit,q_auto,f_auto/v1785008237/Modelo_Flex_Con_Ventana_zwkgea.jpg',
+        'sinventana': 'https://res.cloudinary.com/jxrth5db/image/upload/w_800,c_limit,q_auto,f_auto/v1785008236/Modelo_Flex_Sin_Ventana_gzrfkd.jpg'
+      };
+      [['Con ventanas', 'ventana'], ['Sin ventanas', 'sinventana']].forEach(function(pair) {
       const label = pair[0]; const branch = pair[1];
       const card = document.createElement('div');
       card.className = 'opt-card' + (flexBranch === branch ? ' selected' : '');
-      card.innerHTML = '<div class="opt-img">' + PLACEHOLDER + '</div><div class="opt-body"><div class="opt-name">' + label + '</div></div><div class="opt-check"></div>';
+      var imgUrl = FLEX_VENTANA_IMGS[branch];
+      card.innerHTML = '<div class="opt-img"><img src="' + imgUrl + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div><div class="opt-body"><div class="opt-name">' + label + '</div></div><div class="opt-check"></div>';
       card.addEventListener('click', function() {
         flexBranch = branch; sel = {};
         const branchSteps = buildViews(MODEL_DATA['flex_' + branch] || []);
