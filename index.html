@@ -1153,7 +1153,7 @@ function renderStepView(v) {
 
     // 3. Melamina — solo si electros seleccionado
     if (e !== undefined) {
-      addMuebleriaSection('¿Qué color de melamina?', s.colores_melamina, 'm_mel', function() {
+      addMuebleriaSection('¿De qué color quieres los muebles?', s.colores_melamina, 'm_mel', function() {
         delete sel['m_cub']; delete sel['m_ccub'];
       }, null, false, null, s.imagenes_melamina || {});
     }
