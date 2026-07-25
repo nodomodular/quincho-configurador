@@ -943,9 +943,11 @@ function renderStepView(v) {
         }).join('');
         extraHTML = '<div class="opt-estrella">' + matInfo.estrella + '</div><div class="opt-caracts">' + caracts + '</div>';
       }
-      // Check color-level image for no-color materials (e.g. Parrilla)
-      var colorImagen = (opt.colors && opt.colors[0] && opt.colors[0].imagen) ? opt.colors[0].imagen : null;
-      var imgSrc = colorImagen ? optimizeImg(colorImagen) : (matInfo && matInfo.imagen ? optimizeImg(matInfo.imagen) : null);
+      var imgSrc = matInfo && matInfo.imagen ? optimizeImg(matInfo.imagen) : null;
+      // For no-color materials (Parrilla), show color-level image on material card
+      if (!imgSrc && opt.colors[0].color === null && opt.colors[0].imagen) {
+        imgSrc = optimizeImg(opt.colors[0].imagen);
+      }
       var hasImg = imgSrc ? true : false;
       const card = document.createElement('div');
       card.className = 'opt-card' + (matIdx === i ? ' selected' : '');
