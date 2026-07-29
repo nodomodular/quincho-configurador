@@ -634,6 +634,12 @@ main { padding: 2.5rem 3rem; max-width: 800px; }
 <script>
 const ESTRUCTURA_COSTOS = {"Esencial": {"cf": 5716302, "margen": 0.45}, "Flex sin ventana": {"cf": 6502864, "margen": 0.5}, "Flex con ventana": {"cf": 9132864, "margen": 0.47}, "Pro": {"cf": 8778516, "margen": 0.47}};
 
+const ELECTROS_CONFIG = {
+  '1 espacio de 60×60 cm':        { titulo: 'Quiero un espacio',    desc: 'Te dejamos un espacio de 60×60 cm para artefacto eléctrico' },
+  '2 espacios: 60×60 cm + 45×60 cm': { titulo: 'Quiero dos espacios',  desc: 'Te dejamos un espacio de 60×60 cm y otro de 45×60 cm' },
+  'Sin espacio preparado':         { titulo: 'No quiero espacios',   desc: 'Muebles sin espacio para artefacto eléctrico' },
+};
+
 const DIST_CONFIG = {
   'En I': {
     imagen: 'https://res.cloudinary.com/jxrth5db/image/upload/w_800,c_fill,q_auto,f_auto/v1784604458/Cenital_en_I_wgiqxn.png',
@@ -1057,6 +1063,7 @@ function renderStepView(v) {
         const card = document.createElement('div');
         var mDelta = (deltas && deltas[i]) ? '$' + Math.round(deltas[i]).toLocaleString('es-CL') : null;
         var mBadge = mDelta ? '<div class="delta-badge">' + mDelta + '</div>' : '';
+        var electroCfg = ELECTROS_CONFIG[item] || null;
         if (isDist && DIST_CONFIG[item]) {
           card.className = 'dist-selector-btn' + (sel[selKey] === i ? ' selected' : '');
           card.innerHTML = item;
@@ -1071,6 +1078,10 @@ function renderStepView(v) {
             card.className = 'opt-card' + (sel[selKey] === i ? ' selected' : '');
             card.innerHTML = '<div class="opt-img"><img src="' + mImgUrl + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>' +
               '<div class="opt-body"><div class="opt-name">' + item + '</div></div>' + mBadge + '<div class="opt-check"></div>';
+          } else if (electroCfg) {
+            card.className = 'opt-card opt-body-noimg' + (sel[selKey] === i ? ' selected' : '');
+            var descHTML = '<div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4;font-weight:400;">' + electroCfg.desc + '</div>';
+            card.innerHTML = '<div class="opt-body opt-body-noimg" style="padding:11px 13px 13px;"><div class="opt-name" style="font-weight:600;">' + electroCfg.titulo + '</div>' + descHTML + '</div>' + mBadge + '<div class="opt-check"></div>';
           } else {
             card.className = 'opt-card opt-body-noimg' + (sel[selKey] === i ? ' selected' : '');
             var matInfoM = MATERIALES[item];
