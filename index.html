@@ -709,7 +709,7 @@ function getSteps() {
 // Price
 function getModelKey() {
   if (modeloActivo === 'esencial') return 'Esencial';
-  if (modeloActivo === 'pro') return 'Premium';
+  if (modeloActivo === 'pro') return 'Pro';
   if (modeloActivo === 'flex') return flexBranch === 'ventana' ? 'Flex con ventana' : 'Flex sin ventana';
   return null;
 }
@@ -997,10 +997,11 @@ function renderStepView(v) {
         const card = document.createElement('div');
         card.className = 'opt-card' + (isSelected ? ' selected' : '');
         const hasImg = c.imagen ? true : false;
+        var precioBadge = c.precio ? '<div class="delta-badge">$' + Math.round(c.precio).toLocaleString('es-CL') + '</div>' : '';
         card.innerHTML = (hasImg ? '<div class="opt-img"><img src="' + optimizeImg(c.imagen) + '" loading="lazy" style="width:100%;height:100%;object-fit:contain;background:#f5f3ef;"></div>' : '') +
           '<div class="opt-body' + (hasImg ? '' : ' opt-body-noimg') + '">' +
           '<div class="opt-name">' + c.color + '</div></div>' +
-          '<div class="opt-check"></div>';
+          precioBadge + '<div class="opt-check"></div>';
         card.addEventListener('click', function() {
           sel[concepto + '_col'] = ci;
           renderAll();
@@ -1051,7 +1052,8 @@ function renderStepView(v) {
       grid.className = isDist ? 'dist-btn-row' : 'options-grid';
       items.forEach(function(item, i) {
         const card = document.createElement('div');
-        var mBadge = '';
+        var mDelta = (deltas && deltas[i]) ? '$' + Math.round(deltas[i]).toLocaleString('es-CL') : null;
+        var mBadge = mDelta ? '<div class="delta-badge">' + mDelta + '</div>' : '';
         if (isDist && DIST_CONFIG[item]) {
           card.className = 'dist-selector-btn' + (sel[selKey] === i ? ' selected' : '');
           card.innerHTML = item;
