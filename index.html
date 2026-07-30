@@ -1211,7 +1211,8 @@ function renderStepView(v) {
   panel.innerHTML = titleHTML;
   // Ventana lateral image component
   if (concepto === 'Ventana lateral' && VENTANA_CONFIG) {
-    var selectedVentana = matIdx !== undefined ? s.opciones[matIdx].material : s.opciones[0].material;
+    var matIdxV = sel[concepto + '_mat'];
+    var selectedVentana = matIdxV !== undefined ? s.opciones[matIdxV].material : s.opciones[0].material;
     var ventanaImgCard = document.createElement('div');
     ventanaImgCard.style.cssText = 'border:0.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;';
     var ventanaImg = document.createElement('img');
