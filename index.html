@@ -1209,6 +1209,18 @@ function renderStepView(v) {
   }  // end section block
 
   panel.innerHTML = titleHTML;
+  // Ventana lateral image component
+  if (concepto === 'Ventana lateral' && VENTANA_CONFIG) {
+    var selectedVentana = matIdx !== undefined ? s.opciones[matIdx].material : s.opciones[0].material;
+    var ventanaImgCard = document.createElement('div');
+    ventanaImgCard.style.cssText = 'border:0.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;';
+    var ventanaImg = document.createElement('img');
+    ventanaImg.id = 'ventana-lateral-img';
+    ventanaImg.src = VENTANA_CONFIG[selectedVentana] ? VENTANA_CONFIG[selectedVentana].imagen : '';
+    ventanaImg.style.cssText = 'width:100%;height:auto;object-fit:contain;display:block;max-height:280px;';
+    ventanaImgCard.appendChild(ventanaImg);
+    panel.appendChild(ventanaImgCard);
+  }
   if (contentEl) panel.appendChild(contentEl);
   if (currentStepIdx > 0) {
     const btns = document.createElement('div'); btns.className = 'nav-btns';
