@@ -926,11 +926,22 @@ function renderStepView(v) {
         flexBranch = branch; sel = {};
         const branchSteps = buildViews(MODEL_DATA['flex_' + branch] || []);
         VIEWS = [{ concepto: 'Ventanas', tipo: 'flex_ventana_choice', step: null }].concat(branchSteps);
-        setTimeout(function() { currentStepIdx = 1; currentView = 'step'; renderAll(); }, 280);
+        renderAll();
       });
       grid.appendChild(card);
     });
     panel.appendChild(grid);
+
+    // Navigation buttons for ventana choice
+    const flexBtns = document.createElement('div'); flexBtns.className = 'nav-btns';
+    if (flexBranch !== null) {
+      const flexNext = document.createElement('button'); flexNext.className = 'btn-submit'; flexNext.textContent = 'Siguiente →';
+      flexNext.addEventListener('click', function() {
+        currentStepIdx = 1; currentView = 'step'; window._scrollToTop = true; renderAll();
+      });
+      flexBtns.appendChild(flexNext);
+    }
+    panel.appendChild(flexBtns);
     main.insertBefore(panel, main.querySelector('.success-panel'));
     return;
   }
@@ -977,13 +988,9 @@ function renderStepView(v) {
       card.addEventListener('click', function() {
         sel[concepto + '_mat'] = i;
         delete sel[concepto + '_col'];
-        // No colors? auto-advance
+        // No colors — just re-render to show Siguiente button
         if (opt.colors[0].color === null) {
-          setTimeout(function() {
-            if (currentStepIdx === VIEWS.length - 1) { currentView = 'contact'; }
-            else { currentStepIdx++; currentView = 'step'; }
-            window._scrollToTop = true; renderAll();
-          }, 280);
+          renderAll();
         } else {
           renderAll();
           requestAnimationFrame(function() {
@@ -1196,11 +1203,7 @@ function renderStepView(v) {
         ? s.colores_por_cubierta[cubNombre] : s.colores_cubierta;
       var imgsCub = (s.imagenes_cubierta && s.imagenes_cubierta[cubNombre]) ? s.imagenes_cubierta[cubNombre] : {};
       addMuebleriaSection('¿Qué color de ' + cubNombre + '?', coloresFiltrados, 'm_ccub', function() {
-        setTimeout(function() {
-          if (currentStepIdx === VIEWS.length - 1) { currentView = 'contact'; }
-          else { currentStepIdx++; currentView = 'step'; }
-          renderAll();
-        }, 280);
+        renderAll();
       }, null, false, null, imgsCub);
     }
 
