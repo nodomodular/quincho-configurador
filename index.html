@@ -330,8 +330,10 @@ main { padding: 2.5rem 3rem; max-width: 800px; }
 .btn-next:hover { opacity: 0.82; }
 .btn-back {
   background: transparent; color: var(--muted); border: 1px solid var(--border);
-  padding: 10px 18px; border-radius: 6px; font-size: 13px;
+  padding: 10px 22px; border-radius: 6px; font-size: 14px;
   font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.15s;
+  text-align: center; display: inline-flex; align-items: center; justify-content: center;
+  min-width: 140px;
 }
 .btn-back:hover { border-color: var(--border-strong); color: var(--text); }
 
@@ -386,6 +388,7 @@ main { padding: 2.5rem 3rem; max-width: 800px; }
 .price-reveal-left .pr-sub   { font-size: 11px; color: #5A5550; }
 .price-reveal-val { font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 500; color: #F4F1EA; white-space: nowrap; }
 .btn-submit {
+  min-width: 140px;
   background: var(--accent); color: #fff; border: none;
   padding: 12px 28px; border-radius: 6px; font-size: 14px;
   font-family: 'DM Sans', sans-serif; cursor: pointer;
@@ -1021,11 +1024,6 @@ function renderStepView(v) {
         card.addEventListener('click', function() {
           sel[concepto + '_col'] = ci;
           renderAll();
-          setTimeout(function() {
-            if (currentStepIdx === VIEWS.length - 1) { currentView = 'contact'; }
-            else { currentStepIdx++; currentView = 'step'; }
-            window._scrollToTop = true; renderAll();
-          }, 280);
         });
         colorGrid.appendChild(card);
       });
@@ -1223,12 +1221,24 @@ function renderStepView(v) {
     panel.appendChild(ventanaImgCard);
   }
   if (contentEl) panel.appendChild(contentEl);
+  const btns = document.createElement('div'); btns.className = 'nav-btns';
   if (currentStepIdx > 0) {
-    const btns = document.createElement('div'); btns.className = 'nav-btns';
     const back = document.createElement('button'); back.className = 'btn-back'; back.textContent = '← Atrás';
     back.addEventListener('click', function() { currentStepIdx--; currentView = 'step'; window._scrollToTop = true; renderAll(); });
-    btns.appendChild(back); panel.appendChild(btns);
+    btns.appendChild(back);
   }
+  if (viewDone(currentStepIdx)) {
+    const next = document.createElement('button'); next.className = 'btn-submit'; next.textContent = 'Siguiente →';
+    next.style.cssText = '';
+    next.addEventListener('click', function() {
+      window._scrollToTop = true;
+      if (currentStepIdx === VIEWS.length - 1) { currentView = 'contact'; }
+      else { currentStepIdx++; currentView = 'step'; }
+      renderAll();
+    });
+    btns.appendChild(next);
+  }
+  panel.appendChild(btns);
   main.insertBefore(panel, main.querySelector('.success-panel'));
 }
 
