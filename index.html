@@ -1240,20 +1240,9 @@ function renderStepView(v) {
 
     // 3. Melamina — solo si electros seleccionado
     if (e !== undefined) {
-      // Calculate price per melamina using first cubierta/color if not yet selected
-      var melPrecios = null;
-      var distStr_m = s.distribuciones[d];
-      var elecArr_m = (s.electros_por_dist && s.electros_por_dist[distStr_m]) ? s.electros_por_dist[distStr_m] : s.electros;
-      var cub_m = (c !== undefined) ? s.cubiertas[c] : s.cubiertas[0];
-      var colFilt_m = (s.colores_por_cubierta && s.colores_por_cubierta[cub_m]) ? s.colores_por_cubierta[cub_m] : s.colores_cubierta;
-      var colorCub_m = (cc !== undefined) ? (colFilt_m[cc] || '') : (colFilt_m[0] || '');
-      melPrecios = s.colores_melamina.map(function(mel) {
-        var key = distStr_m + '|' + elecArr_m[e] + '|' + cub_m + '|' + colorCub_m + '|' + mel;
-        return s.lookup[key] || 0;
-      });
       addMuebleriaSection('¿De qué color quieres los muebles?', s.colores_melamina, 'm_mel', function() {
         delete sel['m_cub']; delete sel['m_ccub'];
-      }, melPrecios, false, null, s.imagenes_melamina || {});
+      }, null, false, null, s.imagenes_melamina || {});
     }
 
     // 4. Cubierta — solo si melamina seleccionada
@@ -1269,14 +1258,9 @@ function renderStepView(v) {
       var coloresFiltrados = (s.colores_por_cubierta && s.colores_por_cubierta[cubNombre])
         ? s.colores_por_cubierta[cubNombre] : s.colores_cubierta;
       var imgsCub = (s.imagenes_cubierta && s.imagenes_cubierta[cubNombre]) ? s.imagenes_cubierta[cubNombre] : {};
-      var firstMel_c = s.colores_melamina[cm !== undefined ? cm : 0];
-      var cubPrecios = coloresFiltrados.map(function(col) {
-        var key = distStr + '|' + elecArr[e] + '|' + cubNombre + '|' + col + '|' + firstMel_c;
-        return s.lookup[key] || 0;
-      });
       addMuebleriaSection('¿Qué color de ' + cubNombre + '?', coloresFiltrados, 'm_ccub', function() {
         renderAll();
-      }, cubPrecios, false, null, imgsCub);
+      }, null, false, null, imgsCub);
     }
 
   }  // end section block
