@@ -944,6 +944,12 @@ function renderStepView(v) {
 
   // Flex ventana choice
   if (v.tipo === 'flex_ventana_choice') {
+    // Default to 'ventana' if no choice made yet
+    if (flexBranch === null) {
+      flexBranch = 'ventana';
+      const branchSteps = buildViews(MODEL_DATA['flex_ventana'] || []);
+      VIEWS = [{ concepto: 'Ventanas', tipo: 'flex_ventana_choice', step: null }].concat(branchSteps);
+    }
     const panel = document.createElement('div'); panel.className = 'panel active';
     panel.innerHTML = '<div class="panel-eyebrow">Paso 1 · Ventanas</div>' +
       '<div class="panel-title">¿Con o sin ventanas?</div>' +
@@ -990,6 +996,17 @@ function renderStepView(v) {
   let titleHTML = ''; let contentEl = null;
 
   if (v.tipo === 'combined') {
+    // Auto-select first material by default
+    if (sel[concepto + '_mat'] === undefined && s.opciones.length > 0) {
+      sel[concepto + '_mat'] = 0;
+    }
+    // Auto-select first color by default
+    if (sel[concepto + '_col'] === undefined && s.opciones.length > 0) {
+      var defaultOpt = s.opciones[sel[concepto + '_mat'] || 0];
+      if (defaultOpt && defaultOpt.colors[0] && defaultOpt.colors[0].color !== null) {
+        sel[concepto + '_col'] = 0;
+      }
+    }
     const matIdx = sel[concepto + '_mat'];
     titleHTML = '<div class="panel-eyebrow">' + eyebrow + ' · ' + concepto + '</div>' +
       '<div class="panel-title">¿Qué ' + concepto.toLowerCase() + ' prefieres?</div>' +
