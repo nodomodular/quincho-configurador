@@ -1055,15 +1055,7 @@ function renderStepView(v) {
           renderAll();
         } else {
           renderAll();
-          requestAnimationFrame(function() {
-            requestAnimationFrame(function() {
-              var colorSec = document.getElementById('color-section-' + concepto);
-              if (colorSec) {
-                var offset = colorSec.getBoundingClientRect().top + window.scrollY - 80;
-                window.scrollTo({ top: offset, behavior: 'smooth' });
-              }
-            });
-          });
+
         }
       });
       matGrid.appendChild(card);
@@ -1191,21 +1183,7 @@ function renderStepView(v) {
             onSelect(i);
             renderAll();
           }
-          // Scroll to last section (newly appeared)
-          requestAnimationFrame(function() {
-            requestAnimationFrame(function() {
-              var panel = document.querySelector('.panel.active');
-              if (panel) {
-                var secs = panel.querySelectorAll('[data-sel-key]');
-                if (secs.length > 0) {
-                  var lastSec = secs[secs.length - 1];
-                  var rect = lastSec.getBoundingClientRect();
-                  var offset = rect.top + window.scrollY - 80;
-                  window.scrollTo({ top: offset, behavior: 'smooth' });
-                }
-              }
-            });
-          });
+
         });
         grid.appendChild(card);
       });
