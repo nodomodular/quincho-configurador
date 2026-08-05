@@ -646,6 +646,8 @@ const VENTANA_CONFIG = {
   },
 };
 
+const ELECTRO_IMGS = {"En I|1 espacio de 60×60 cm": "https://res.cloudinary.com/jxrth5db/image/upload/v1785962537/Un_Electromestico_I_lidzp2.jpg", "En I|Sin espacio preparado": "https://res.cloudinary.com/jxrth5db/image/upload/v1785962536/Sin_electromestico_I_cxcr9q.jpg", "En L|1 espacio de 60×60 cm": "https://res.cloudinary.com/jxrth5db/image/upload/v1785962536/Un_Electrodomestico_L_hqnxrl.jpg", "En L|Sin espacio preparado": "https://res.cloudinary.com/jxrth5db/image/upload/v1785962536/Sin_Electrodomestico_L_i1d30a.jpg", "En C|1 espacio de 60×60 cm": "https://res.cloudinary.com/jxrth5db/image/upload/v1785962536/Un_Electrodomestico_C_moz2bm.jpg", "En C|2 espacios: 60×60 cm + 45×60 cm": "https://res.cloudinary.com/jxrth5db/image/upload/v1785962536/Dos_Electrodomesticos_C_zjk837.jpg", "En C|Sin espacio preparado": "https://res.cloudinary.com/jxrth5db/image/upload/v1785962536/Sin_Electrodomestico_C_mnpzxb.jpg"};
+
 const ELECTROS_CONFIG = {
   '1 espacio de 60×60 cm':        { titulo: 'Quiero un espacio',    desc: 'Te dejamos un espacio de 60×60 cm para artefacto eléctrico' },
   '2 espacios: 60×60 cm + 45×60 cm': { titulo: 'Quiero dos espacios',  desc: 'Te dejamos un espacio de 60×60 cm y otro de 45×60 cm' },
@@ -1244,6 +1246,28 @@ function renderStepView(v) {
       addMuebleriaSection('¿Espacios bajo el mesón?', availElec, 'm_elec', function() {
         delete sel['m_cub']; delete sel['m_ccub']; delete sel['m_mel'];
       });
+
+    // Electro image component — shows after electro is selected
+    if (e !== undefined) {
+      var electroImgKey = distStr + '|' + availElec[e];
+      var electroImgUrl = ELECTRO_IMGS[electroImgKey];
+      if (electroImgUrl) {
+        var existingElectroImg = document.getElementById('electro-img-card');
+        if (!existingElectroImg) {
+          var electroImgCard = document.createElement('div');
+          electroImgCard.id = 'electro-img-card';
+          electroImgCard.style.cssText = 'border:0.5px solid var(--border);border-radius:12px;overflow:hidden;margin-top:12px;';
+          var electroImg = document.createElement('img');
+          electroImg.id = 'electro-img';
+          electroImg.src = electroImgUrl;
+          electroImg.style.cssText = 'width:100%;height:auto;object-fit:contain;display:block;max-height:280px;';
+          electroImgCard.appendChild(electroImg);
+          contentEl.appendChild(electroImgCard);
+        } else {
+          document.getElementById('electro-img').src = electroImgUrl;
+        }
+      }
+    }
     }
 
     // 3. Melamina — solo si electros seleccionado
