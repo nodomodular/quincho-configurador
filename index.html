@@ -32,12 +32,12 @@ header {
 }
 .header-brand { display: flex; align-items: baseline; gap: 10px; }
 .header-brand-name { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 400; color: #F4F1EA; letter-spacing: -0.01em; }
-.header-brand-tag  { font-size: 11px; color: #5A5550; letter-spacing: 0.1em; text-transform: uppercase; }
+.header-brand-tag  { font-size: 11px; color: #F4F1EA; letter-spacing: 0.1em; text-transform: uppercase; }
 .header-right { display: flex; align-items: center; gap: 1rem; }
-.header-step-label { font-size: 12px; color: #5A5550; letter-spacing: 0.04em; }
+.header-step-label { font-size: 12px; color: #F4F1EA; letter-spacing: 0.04em; }
 .btn-cambiar-modelo {
-  font-size: 11px; color: #5A5550;
-  background: transparent; border: 0.5px solid #3A3530;
+  font-size: 11px; color: #F4F1EA;
+  background: transparent; border: 0.5px solid #6A6560;
   padding: 4px 10px; border-radius: 4px;
   cursor: pointer; font-family: 'DM Sans', sans-serif;
   transition: all 0.15s; display: none;
@@ -134,8 +134,8 @@ header {
   height: calc(100vh - 67px); overflow-y: auto;
 }
 .sidebar-model-label {
-  font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;
-  color: var(--muted); padding: 0 1.5rem 0.75rem;
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--text); font-weight: 600; padding: 0 1.5rem 0.75rem;
 }
 
 /* ── TIMELINE ── */
@@ -1032,11 +1032,19 @@ function renderStepView(v) {
       var colorImg = isNoColor && opt.colors[0].imagen ? optimizeImg(opt.colors[0].imagen) : null;
       var hasImg = imgSrc ? true : false;
       const card = document.createElement('div');
-      card.className = 'opt-card' + (matIdx === i ? ' selected' : '');
-      card.innerHTML = (hasImg ? '<div class="opt-img"><img src="' + optimizeImg(imgSrc) + '" loading="lazy" style="width:100%;height:100%;object-fit:contain;background:#f5f3ef;"></div>' : '') +
-        '<div class="opt-body' + (hasImg ? '' : ' opt-body-noimg') + '">' +
-        '<div class="opt-name">' + opt.material + '</div>' + extraHTML +
-        '</div><div class="opt-check"></div>';
+      // Parrilla: title top, image bottom
+      if (isNoColor && colorImg) {
+        card.className = 'opt-card opt-body-noimg' + (matIdx === i ? ' selected' : '');
+        card.innerHTML = '<div class="opt-body opt-body-noimg"><div class="opt-name">' + opt.material + '</div>' + extraHTML + '</div>' +
+          '<div class="opt-img" style="margin:0 0 0;border-radius:0 0 10px 10px;overflow:hidden;height:120px;"><img src="' + colorImg + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>' +
+          '<div class="opt-check"></div>';
+      } else {
+        card.className = 'opt-card' + (matIdx === i ? ' selected' : '');
+        card.innerHTML = (hasImg ? '<div class="opt-img"><img src="' + optimizeImg(imgSrc) + '" loading="lazy" style="width:100%;height:100%;object-fit:contain;background:#f5f3ef;"></div>' : '') +
+          '<div class="opt-body' + (hasImg ? '' : ' opt-body-noimg') + '">' +
+          '<div class="opt-name">' + opt.material + '</div>' + extraHTML +
+          '</div><div class="opt-check"></div>';
+      }
       card.addEventListener('click', function() {
         sel[concepto + '_mat'] = i;
         delete sel[concepto + '_col'];
