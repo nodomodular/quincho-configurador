@@ -1064,7 +1064,14 @@ function renderStepView(v) {
       var hasImg = imgSrc ? true : false;
       const card = document.createElement('div');
       // Parrilla: title top, image bottom
-      if (isNoColor && colorImg) {
+      if (isNoColor && concepto === 'Ventana lateral' && VENTANA_CONFIG && VENTANA_CONFIG[opt.material]) {
+        // Ventana lateral: text-only card with description
+        card.className = 'opt-card opt-body-noimg' + (matIdx === i ? ' selected' : '');
+        var vDesc = VENTANA_DESC && VENTANA_DESC[opt.material]
+          ? '<div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5;font-weight:400;">' + VENTANA_DESC[opt.material] + '</div>'
+          : '';
+        card.innerHTML = '<div class="opt-body opt-body-noimg" style="padding:14px 16px 16px;"><div class="opt-name" style="font-size:15px;">' + opt.material + '</div>' + vDesc + '</div><div class="opt-check"></div>';
+      } else if (isNoColor && colorImg) {
         card.className = 'opt-card opt-body-noimg' + (matIdx === i ? ' selected' : '');
         var ventDesc = (VENTANA_DESC && VENTANA_DESC[opt.material])
           ? '<div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5;">' + VENTANA_DESC[opt.material] + '</div>'
