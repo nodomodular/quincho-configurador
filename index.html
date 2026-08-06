@@ -1123,13 +1123,14 @@ function renderStepView(v) {
     var subTitle61 = 'Distribución de mueblería y espacios para electrodomésticos';
     var subTitle62 = 'Color de muebles y cubierta';
     var subSub61 = 'En esta etapa podrás elegir cómo quieres que sea la distribución de tus muebles y si quieres dejar espacios vacíos para instalar electrodomésticos como refrigerador o lavavajillas.';
-    var subSub62 = 'Elige el color de tus muebles y el tipo de cubierta con su color.';
+    var subSub62 = '';
     var isMuebleDist = v.tipo === 'muebleria_dist';
     var showDist = isMuebleDist;
     var showColor = v.tipo === 'muebleria_color';
+    var subtitleHtml = (isMuebleDist ? subSub61 : subSub62);
     titleHTML = '<div class="panel-eyebrow">' + eyebrow + ' · Mueblería</div>' +
       '<div class="panel-title">' + (isMuebleDist ? subTitle61 : subTitle62) + '</div>' +
-      '<div class="panel-subtitle">' + (isMuebleDist ? subSub61 : subSub62) + '</div>';
+      (subtitleHtml ? '<div class="panel-subtitle">' + subtitleHtml + '</div>' : '');
 
     contentEl = document.createElement('div');
 
@@ -1139,7 +1140,7 @@ function renderStepView(v) {
       var subtitle = (title === '¿Espacios bajo el mesón?')
         ? '<div style="font-size:12px;color:var(--muted);margin-bottom:0.75rem;line-height:1.5;">Un espacio es el hueco en el mueble para instalar un artefacto eléctrico como un frigobar o lavavajillas.</div>'
         : '';
-      sec.innerHTML = '<div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px;">' + title + '</div>' + subtitle;
+      sec.innerHTML = '<div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:12px;">' + title + '</div>' + subtitle;
       // For distribution: build single card with image + selector buttons
       if (isDist) {
         // Preload all images
