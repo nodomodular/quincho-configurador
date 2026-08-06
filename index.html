@@ -130,7 +130,7 @@ header {
 /* ── SIDEBAR ── */
 .sidebar {
   background: var(--surface); border-right: 0.5px solid var(--border);
-  padding: 2rem 0; position: sticky; top: 67px;
+  padding: 2rem 0; position: sticky; top: 67px; overflow: hidden;
   height: calc(100vh - 67px); overflow-y: auto;
 }
 .sidebar-model-label {
@@ -158,11 +158,12 @@ header {
 }
 
 .sidebar-step {
-  display: flex; align-items: flex-start; gap: 12px;
+  display: flex; flex-direction: column; align-items: stretch;
   padding: 0.45rem 0;
   cursor: pointer;
   position: relative; z-index: 1;
   transition: opacity 0.15s;
+  overflow: hidden;
 }
 .sidebar-step:hover .sidebar-label { color: var(--text); }
 
@@ -715,7 +716,8 @@ function buildViews(steps) {
       views.push({ concepto: concepto, tipo: 'combined', step: step });
     } else if (step.tipo === 'muebleria') {
       if (step.distribuciones.length === 1) sel['m_dist'] = 0;
-      views.push({ concepto: 'Mueblería', tipo: 'muebleria_combined', step: step });
+      views.push({ concepto: 'Mueblería', subconcepto: 'Distribución', tipo: 'muebleria_dist', step: step });
+      views.push({ concepto: 'Mueblería', subconcepto: 'Color y cubierta', tipo: 'muebleria_color', step: step });
     }
   });
   return views;
@@ -828,12 +830,15 @@ function viewDone(i) {
     if (opt.colors[0].color === null) return true;
     return sel[concepto + '_col'] !== undefined;
   }
-  if (v.tipo === 'muebleria_combined') {
+  if (v.tipo === 'muebleria_dist') {
     if (s.distribuciones.length > 1 && sel['m_dist'] === undefined) return false;
     if (sel['m_elec'] === undefined) return false;
+    return true;
+  }
+  if (v.tipo === 'muebleria_color') {
+    if (sel['m_mel']  === undefined) return false;
     if (sel['m_cub']  === undefined) return false;
     if (sel['m_ccub'] === undefined) return false;
-    if (sel['m_mel']  === undefined) return false;
     return true;
   }
   return false;
@@ -858,7 +863,7 @@ function renderSidebar() {
   const timeline = document.createElement('div'); timeline.className = 'timeline';
 
   const seen = new Set(); const items = [];
-  VIEWS.forEach(function(v, i) { if (!seen.has(v.concepto)) { seen.add(v.concepto); items.push({ label: v.concepto, firstViewIdx: i }); } });
+  VIEWS.forEach(function(v, i) { if (!seen.has(v.concepto)) { seen.add(v.concepto); items.push({ label: v.concepto, subconcepto: v.subconcepto || null, firstViewIdx: i }); } });
 
   items.forEach(function(item, si) {
     const itemViews = VIEWS.map(function(v, i) { return { v: v, i: i }; }).filter(function(x) { return x.v.concepto === item.label; });
@@ -874,7 +879,26 @@ function renderSidebar() {
     div.className = 'sidebar-step' + (active ? ' active' : '') + (done ? ' done' : '') + (locked ? ' locked' : '');
     const num = document.createElement('div'); num.className = 'step-num'; num.textContent = done ? '✓' : (si + 1);
     const lbl = document.createElement('span'); lbl.className = 'sidebar-label'; lbl.textContent = item.label;
-    div.append(num, lbl);
+    var mainRow = document.createElement('div');
+    mainRow.style.cssText = 'display:flex;align-items:center;gap:12px;';
+    mainRow.append(num, lbl);
+    div.appendChild(mainRow);
+    // Show sub-steps for Mueblería
+    var subViews = itemViews.filter(function(x) { return x.v.subconcepto; });
+    if (subViews.length > 0) {
+      var subList = document.createElement('div');
+      subList.style.cssText = 'padding-left:32px;margin-top:4px;display:flex;flex-direction:column;gap:2px;overflow:hidden;';
+      subViews.forEach(function(x) {
+        var activeSub = currentView === 'step' && currentStepIdx === x.i;
+        var doneSub = viewDone(x.i);
+        var subItem = document.createElement('span');
+        subItem.style.cssText = 'font-size:10px;letter-spacing:0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;display:block;' +
+          (activeSub ? 'color:var(--text);font-weight:600;' : doneSub ? 'color:var(--accent);' : 'color:var(--muted);');
+        subItem.textContent = (doneSub ? '✓ ' : activeSub ? '› ' : '· ') + x.v.subconcepto;
+        subList.appendChild(subItem);
+      });
+      div.appendChild(subList);
+    }
     div.addEventListener('click', function() {
       if (locked) { showOrderMessage(); return; }
       currentStepIdx = item.firstViewIdx; currentView = 'step'; window._scrollToTop = true; renderAll();
@@ -1095,10 +1119,17 @@ function renderStepView(v) {
       contentEl.appendChild(colorGrid);
     }
   }
-  else if (v.tipo === 'muebleria_combined') {
+  else if (v.tipo === 'muebleria_dist' || v.tipo === 'muebleria_color') {
+    var subTitle61 = 'Distribución de mueblería y espacios para electrodomésticos';
+    var subTitle62 = 'Color de muebles y cubierta';
+    var subSub61 = 'En esta etapa podrás elegir cómo quieres que sea la distribución de tus muebles y si quieres dejar espacios vacíos para instalar electrodomésticos como refrigerador o lavavajillas.';
+    var subSub62 = 'Elige el color de tus muebles y el tipo de cubierta con su color.';
+    var isMuebleDist = v.tipo === 'muebleria_dist';
+    var showDist = isMuebleDist;
+    var showColor = v.tipo === 'muebleria_color';
     titleHTML = '<div class="panel-eyebrow">' + eyebrow + ' · Mueblería</div>' +
-      '<div class="panel-title">Personaliza tu mueblería</div>' +
-      '<div class="panel-subtitle">Elige cada opción — las siguientes aparecen al completar la anterior.</div>';
+      '<div class="panel-title">' + (isMuebleDist ? subTitle61 : subTitle62) + '</div>' +
+      '<div class="panel-subtitle">' + (isMuebleDist ? subSub61 : subSub62) + '</div>';
 
     contentEl = document.createElement('div');
 
@@ -1209,15 +1240,15 @@ function renderStepView(v) {
     const c = sel['m_cub'];
     const cc = sel['m_ccub'];
 
-    // 1. Distribución (solo si hay más de una)
-    if (s.distribuciones.length > 1) {
+    // 1. Distribución (solo si hay más de una y estamos en paso dist)
+    if (showDist && s.distribuciones.length > 1) {
       addMuebleriaSection('¿Cómo distribuyes la cocina?', s.distribuciones, 'm_dist', function() {
         delete sel['m_elec']; delete sel['m_cub']; delete sel['m_ccub']; delete sel['m_mel'];
       }, null, true);
     }
 
-    // 2. Electros — solo si dist seleccionada
-    if (d !== undefined || s.distribuciones.length === 1) {
+    // 2. Electros — solo en paso dist
+    if (showDist && (d !== undefined || s.distribuciones.length === 1)) {
       const distIdx = sel['m_dist'] !== undefined ? sel['m_dist'] : 0;
       const distStr = s.distribuciones[distIdx];
       const availElec = (s.electros_por_dist && s.electros_por_dist[distStr]) ? s.electros_por_dist[distStr] : s.electros;
@@ -1225,8 +1256,8 @@ function renderStepView(v) {
         delete sel['m_cub']; delete sel['m_ccub']; delete sel['m_mel'];
       });
 
-    // Electro image component — shows after electro is selected
-    if (e !== undefined) {
+    // Electro image component — shows after electro is selected (only in dist step)
+    if (showDist && e !== undefined) {
       var electroImgKey = distStr + '|' + availElec[e];
       var electroImgUrl = ELECTRO_IMGS[electroImgKey];
       if (electroImgUrl) {
@@ -1248,22 +1279,22 @@ function renderStepView(v) {
     }
     }
 
-    // 3. Melamina — solo si electros seleccionado
-    if (e !== undefined) {
+    // 3. Melamina — solo en paso color
+    if (showColor && e !== undefined) {
       addMuebleriaSection('¿De qué color quieres los muebles?', s.colores_melamina, 'm_mel', function() {
         delete sel['m_cub']; delete sel['m_ccub'];
       }, null, false, null, s.imagenes_melamina || {});
     }
 
-    // 4. Cubierta — solo si melamina seleccionada
-    if (cm !== undefined) {
+    // 4. Cubierta — solo en paso color si melamina seleccionada
+    if (showColor && cm !== undefined) {
       addMuebleriaSection('¿Qué tipo de cubierta?', s.cubiertas, 'm_cub', function() {
         delete sel['m_ccub'];
       });
     }
 
-    // 5. Color cubierta — solo si cubierta seleccionada
-    if (c !== undefined) {
+    // 5. Color cubierta — solo en paso color si cubierta seleccionada
+    if (showColor && c !== undefined) {
       var cubNombre = s.cubiertas[c];
       var coloresFiltrados = (s.colores_por_cubierta && s.colores_por_cubierta[cubNombre])
         ? s.colores_por_cubierta[cubNombre] : s.colores_cubierta;
