@@ -1066,8 +1066,11 @@ function renderStepView(v) {
       // Parrilla: title top, image bottom
       if (isNoColor && colorImg) {
         card.className = 'opt-card opt-body-noimg' + (matIdx === i ? ' selected' : '');
-        card.innerHTML = '<div class="opt-body opt-body-noimg"><div class="opt-name">' + opt.material + '</div>' + extraHTML + '</div>' +
-          '<div class="opt-img" style="margin:0 0 0;border-radius:0 0 10px 10px;overflow:hidden;height:120px;"><img src="' + colorImg + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>' +
+        var ventDesc = (VENTANA_DESC && VENTANA_DESC[opt.material])
+          ? '<div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5;">' + VENTANA_DESC[opt.material] + '</div>'
+          : '';
+        card.innerHTML = '<div class="opt-body opt-body-noimg"><div class="opt-name">' + opt.material + '</div>' + ventDesc + '</div>' +
+          '<div class="opt-img" style="margin:0;border-radius:0 0 10px 10px;overflow:hidden;height:140px;"><img src="' + colorImg + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>' +
           '<div class="opt-check"></div>';
       } else {
         card.className = 'opt-card' + (matIdx === i ? ' selected' : '');
