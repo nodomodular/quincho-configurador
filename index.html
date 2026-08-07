@@ -1635,7 +1635,12 @@ function renderAll() {
 
 // Iniciar modelo
 function iniciarModelo(modelo) {
-  modeloActivo = modelo; sel = {}; currentStepIdx = 0; flexBranch = null;
+  modeloActivo = modelo; sel = {}; currentStepIdx = 0;
+  flexBranch = modelo === 'flex' ? 'ventana' : null;
+  if (modelo === 'flex') {
+    const branchSteps = buildViews(MODEL_DATA['flex_ventana'] || []);
+    VIEWS = [{ concepto: 'Ventanas', tipo: 'flex_ventana_choice', step: null }].concat(branchSteps);
+  }
   const nombre = modelo === 'pro' ? 'Premium' : modelo === 'esencial' ? 'Esencial' : 'Flex';
   document.getElementById('sidebar-model-label').textContent = 'Modelo ' + nombre;
   document.getElementById('welcome-badge').textContent = '● Modelo ' + nombre;
