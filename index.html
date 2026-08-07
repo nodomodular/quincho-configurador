@@ -851,7 +851,7 @@ function calcPVD() {
 function updatePVD() {
   const el = document.getElementById('pvd-display');
   if (!el) return;
-  if (!modeloActivo || currentView === 'landing') {
+  if (!modeloActivo || currentView === 'landing' || currentView === 'contact') {
     el.style.display = 'none';
     return;
   }
@@ -863,48 +863,8 @@ function updatePVD() {
 }
 
 function calcGT() {
-  const key = getModelKey();
-  if (!key || !ESTRUCTURA_COSTOS[key]) return 0;
-  const ec = ESTRUCTURA_COSTOS[key];
-  // Separate parrilla from other elections
-  var parrillaPrecio = 0;
-  var sumSinParrilla = 0;
-  getSteps().forEach(function(step) {
-    const concepto = step.concepto || ('paso' + step.paso);
-    if (step.tipo === 'simple') {
-      const matIdx = sel[concepto + '_mat'];
-      if (matIdx === undefined) return;
-      const opt = step.opciones[matIdx];
-      var precio = 0;
-      if (opt.colors[0].color === null) {
-        precio = opt.colors[0].precio || 0;
-      } else {
-        const ci = sel[concepto + '_col'];
-        if (ci !== undefined) precio = opt.colors[ci].precio || 0;
-      }
-      if (concepto === 'Parrilla') {
-        parrillaPrecio = precio;
-      } else {
-        sumSinParrilla += precio;
-      }
-    } else if (step.tipo === 'muebleria') {
-      const d = sel['m_dist'] !== undefined ? sel['m_dist'] : 0;
-      const e = sel['m_elec'];
-      const cm = sel['m_mel'];
-      const c  = sel['m_cub'];
-      const cc = sel['m_ccub'];
-      if (e !== undefined && c !== undefined && cc !== undefined && cm !== undefined) {
-        const distStr = step.distribuciones[d];
-        const elecArr = (step.electros_por_dist && step.electros_por_dist[distStr]) ? step.electros_por_dist[distStr] : step.electros;
-        const cubNombre = step.cubiertas[c];
-        const coloresFiltrados = (step.colores_por_cubierta && step.colores_por_cubierta[cubNombre]) ? step.colores_por_cubierta[cubNombre] : step.colores_cubierta;
-        const colorCubStr = coloresFiltrados[cc] || step.colores_cubierta[cc] || '';
-        const lookupKey = distStr + '|' + elecArr[e] + '|' + cubNombre + '|' + colorCubStr + '|' + step.colores_melamina[cm];
-        sumSinParrilla += step.lookup[lookupKey] || 0;
-      }
-    }
-  });
-  return Math.round((ec.cf + sumSinParrilla) * (1 + ec.margen) + parrillaPrecio);
+  // Uses same logic as PVD — precio comercial + deltas con margen
+  return calcPVD();
 }
 function fmt(n) { return '$' + Math.round(n).toLocaleString('es-CL'); }
 
@@ -1113,21 +1073,7 @@ function renderStepView(v) {
   let titleHTML = ''; let contentEl = null;
 
   if (v.tipo === 'combined') {
-    // Auto-select only minimum price option (delta=0)
-    if (sel[concepto + '_mat'] === undefined && s.opciones.length > 0) {
-      for (var mi = 0; mi < s.opciones.length; mi++) {
-        var opt0 = s.opciones[mi];
-        var firstColor = opt0.colors[0];
-        if ((firstColor.delta || 0) === 0) { sel[concepto + '_mat'] = mi; break; }
-      }
-    }
-    // Auto-select color only if delta=0
-    if (sel[concepto + '_col'] === undefined && sel[concepto + '_mat'] !== undefined) {
-      var selOpt = s.opciones[sel[concepto + '_mat']];
-      if (selOpt && selOpt.colors[0] && selOpt.colors[0].color !== null && (selOpt.colors[0].delta || 0) === 0) {
-        sel[concepto + '_col'] = 0;
-      }
-    }
+    // Pre-selection happens only once via selDefaults, not here
     const matIdx = sel[concepto + '_mat'];
     titleHTML = '<div class="panel-eyebrow">' + eyebrow + ' · ' + concepto + '</div>' +
       '<div class="panel-title">¿Qué ' + concepto.toLowerCase() + ' prefieres?</div>' +
@@ -1179,11 +1125,6 @@ function renderStepView(v) {
       card.addEventListener('click', function() {
         sel[concepto + '_mat'] = i;
         delete sel[concepto + '_col'];
-        // Only preselect color if the selected material's first color has delta=0
-        var clickedMat = s.opciones[i];
-        if (clickedMat && clickedMat.colors[0].color !== null && (clickedMat.colors[0].delta || 0) === 0) {
-          sel[concepto + '_col'] = 0;
-        }
         renderAll();
       });
       matGrid.appendChild(card);
@@ -1644,6 +1585,31 @@ function renderAll() {
 }
 
 // Iniciar modelo
+function setDefaultSelections() {
+  // Set minimum selections once — only if not already set
+  var steps = getSteps();
+  steps.forEach(function(step) {
+    var concepto = step.concepto || ('paso' + step.paso);
+    if (step.tipo === 'simple' && sel[concepto + '_mat'] === undefined) {
+      for (var mi = 0; mi < step.opciones.length; mi++) {
+        var opt0 = step.opciones[mi];
+        if ((opt0.colors[0].delta || 0) === 0) {
+          sel[concepto + '_mat'] = mi;
+          if (opt0.colors[0].color !== null) {
+            for (var ci = 0; ci < opt0.colors.length; ci++) {
+              if ((opt0.colors[ci].delta || 0) === 0) {
+                sel[concepto + '_col'] = ci;
+                break;
+              }
+            }
+          }
+          break;
+        }
+      }
+    }
+  });
+}
+
 function iniciarModelo(modelo) {
   modeloActivo = modelo; sel = {}; currentStepIdx = 0;
   flexBranch = modelo === 'flex' ? 'ventana' : null;
@@ -1651,6 +1617,7 @@ function iniciarModelo(modelo) {
     const branchSteps = buildViews(MODEL_DATA['flex_ventana'] || []);
     VIEWS = [{ concepto: 'Ventanas', tipo: 'flex_ventana_choice', step: null }].concat(branchSteps);
   }
+  setTimeout(setDefaultSelections, 0);
   const nombre = modelo === 'pro' ? 'Premium' : modelo === 'esencial' ? 'Esencial' : 'Flex';
   document.getElementById('sidebar-model-label').textContent = 'Modelo ' + nombre;
   document.getElementById('welcome-badge').textContent = '● Modelo ' + nombre;
@@ -1658,6 +1625,7 @@ function iniciarModelo(modelo) {
     VIEWS = [{ concepto: 'Ventanas', tipo: 'flex_ventana_choice', step: null }];
   } else {
     VIEWS = buildViews(MODEL_DATA[modelo] || []);
+  setTimeout(setDefaultSelections, 0);
   }
   currentView = 'welcome';
   document.getElementById('success-panel').classList.remove('active');
