@@ -637,6 +637,13 @@ main { padding: 2.5rem 3rem; max-width: 800px; }
 </div>
 
 <script>
+const PRECIOS_COMERCIALES = {
+  'esencial':        11790000,
+  'flex_sinventana': 13990000,
+  'flex_ventana':    17090000,
+  'pro':             16690000
+};
+
 const MINS_DATA = {"pro": {"Piso": 211232, "Cielo": 180000, "Muro interior": 182070, "Muro exterior": 520000, "Ventana lateral": 0, "Muebleria": 1236000, "Parrilla": 0}, "esencial": {"Piso": 350000, "Cielo": 218130, "Muro interior": 80509, "Muro exterior": 250000, "Muebleria": 1236000, "Parrilla": 0}, "flex_ventana": {"Piso": 210714, "Cielo": 180000, "Muro interior": 182070, "Muro exterior": 400000, "Muebleria": 1236000, "Parrilla": 0}, "flex_sinventana": {"Piso": 350000, "Cielo": 218130, "Muro interior": 349000, "Muro exterior": 400000, "Muebleria": 1236000, "Parrilla": 0}};
 
 const ESTRUCTURA_COSTOS = {"Esencial": {"cf": 5716302, "margen": 0.45}, "Flex sin ventana": {"cf": 6502864, "margen": 0.5}, "Flex con ventana": {"cf": 9132864, "margen": 0.47}, "Premium": {"cf": 8778516, "margen": 0.47}};
@@ -788,13 +795,12 @@ function getMinsKey() {
 
 function calcPVD() {
   const mkey = getMinsKey();
-  const eckey = getModelKey();
-  if (!mkey || !eckey || !ESTRUCTURA_COSTOS[eckey] || !MINS_DATA[mkey]) return 0;
-  const ec = ESTRUCTURA_COSTOS[eckey];
+  if (!mkey || !MINS_DATA[mkey] || !PRECIOS_COMERCIALES[mkey]) return 0;
   const mins = MINS_DATA[mkey];
+  const precioBase = PRECIOS_COMERCIALES[mkey];
 
-  var sumElec = 0;
-  var parrillaPrecio = 350000; // default con parrilla
+  var deltaTotal = 0;
+  var parrillaDelta = 0; // delta sobre mínimo parrilla (0)
 
   getSteps().forEach(function(step) {
     const concepto = step.concepto || ('paso' + step.paso);
@@ -803,9 +809,7 @@ function calcPVD() {
     if (step.tipo === 'simple') {
       const matIdx = sel[concepto + '_mat'];
       if (matIdx === undefined) {
-        // Not chosen yet — use minimum
-        if (concepto === 'Parrilla') parrillaPrecio = 350000;
-        else sumElec += minP;
+        // No elegido aún — delta = 0 (precio comercial ya incluye mínimo)
       } else {
         const opt = step.opciones[matIdx];
         var precio = 0;
@@ -816,9 +820,9 @@ function calcPVD() {
           precio = ci !== undefined ? (opt.colors[ci].precio || 0) : minP;
         }
         if (concepto === 'Parrilla') {
-          parrillaPrecio = precio;
+          parrillaDelta = precio - 0; // mínimo parrilla es 0 (sin parrilla)
         } else {
-          sumElec += precio;
+          deltaTotal += precio - minP;
         }
       }
     } else if (step.tipo === 'muebleria') {
@@ -831,14 +835,17 @@ function calcPVD() {
         const colFilt = (step.colores_por_cubierta && step.colores_por_cubierta[cubNombre]) ? step.colores_por_cubierta[cubNombre] : step.colores_cubierta;
         const colorCub = colFilt[cc] || '';
         const key = distStr + '|' + elecArr[e] + '|' + cubNombre + '|' + colorCub + '|' + step.colores_melamina[cm];
-        sumElec += step.lookup[key] || minP;
-      } else {
-        sumElec += minP;
+        const precioMueble = step.lookup[key] || minP;
+        deltaTotal += precioMueble - minP;
       }
     }
   });
 
-  return Math.round((ec.cf + sumElec) * (1 + ec.margen) + parrillaPrecio);
+  // Apply delta with margin + parrilla delta (outside margin)
+  const eckey = getModelKey();
+  const ec = ESTRUCTURA_COSTOS[eckey];
+  const deltaCostoMargen = Math.round(deltaTotal * (1 + ec.margen));
+  return precioBase + deltaCostoMargen + parrillaDelta;
 }
 
 function updatePVD() {
