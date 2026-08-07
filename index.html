@@ -1179,8 +1179,9 @@ function renderStepView(v) {
       card.addEventListener('click', function() {
         sel[concepto + '_mat'] = i;
         delete sel[concepto + '_col'];
-        // Only preselect color if it has delta=0 (minimum price)
-        if (opt.colors[0].color !== null && (opt.colors[0].delta || 0) === 0) {
+        // Only preselect color if the selected material's first color has delta=0
+        var clickedMat = s.opciones[i];
+        if (clickedMat && clickedMat.colors[0].color !== null && (clickedMat.colors[0].delta || 0) === 0) {
           sel[concepto + '_col'] = 0;
         }
         renderAll();
