@@ -1113,14 +1113,18 @@ function renderStepView(v) {
   let titleHTML = ''; let contentEl = null;
 
   if (v.tipo === 'combined') {
-    // Auto-select first material by default
+    // Auto-select only minimum price option (delta=0)
     if (sel[concepto + '_mat'] === undefined && s.opciones.length > 0) {
-      sel[concepto + '_mat'] = 0;
+      for (var mi = 0; mi < s.opciones.length; mi++) {
+        var opt0 = s.opciones[mi];
+        var firstColor = opt0.colors[0];
+        if ((firstColor.delta || 0) === 0) { sel[concepto + '_mat'] = mi; break; }
+      }
     }
-    // Auto-select first color by default
-    if (sel[concepto + '_col'] === undefined && s.opciones.length > 0) {
-      var defaultOpt = s.opciones[sel[concepto + '_mat'] || 0];
-      if (defaultOpt && defaultOpt.colors[0] && defaultOpt.colors[0].color !== null) {
+    // Auto-select color only if delta=0
+    if (sel[concepto + '_col'] === undefined && sel[concepto + '_mat'] !== undefined) {
+      var selOpt = s.opciones[sel[concepto + '_mat']];
+      if (selOpt && selOpt.colors[0] && selOpt.colors[0].color !== null && (selOpt.colors[0].delta || 0) === 0) {
         sel[concepto + '_col'] = 0;
       }
     }
@@ -1175,13 +1179,11 @@ function renderStepView(v) {
       card.addEventListener('click', function() {
         sel[concepto + '_mat'] = i;
         delete sel[concepto + '_col'];
-        // No colors — just re-render to show Siguiente button
-        if (opt.colors[0].color === null) {
-          renderAll();
-        } else {
-          renderAll();
-
+        // Only preselect color if it has delta=0 (minimum price)
+        if (opt.colors[0].color !== null && (opt.colors[0].delta || 0) === 0) {
+          sel[concepto + '_col'] = 0;
         }
+        renderAll();
       });
       matGrid.appendChild(card);
     });
