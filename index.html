@@ -500,7 +500,7 @@ main { padding: 2.5rem 3rem; max-width: 800px; }
   .header-step-label { display: none; }
   #pvd-display { font-size: 13px; }
   .progress-track { top: 48px; }
-  #mobile-progress { display: flex !important; }
+  #mobile-progress { display: flex; }
   .layout { grid-template-columns: 1fr; min-height: auto; }
   .sidebar { display: none; }
   main { padding: 1.25rem 1rem 5rem; max-width: 100%; }
@@ -519,7 +519,7 @@ main { padding: 2.5rem 3rem; max-width: 800px; }
   .btn-submit { width: 100%; }
 }
 #mobile-progress {
-  display: none !important;
+  display: none;
   background: var(--text);
   padding: 8px 16px 0;
   flex-direction: column;
@@ -1150,7 +1150,7 @@ function renderStepView(v) {
 
     // Navigation buttons for ventana choice
     const flexBtns = document.createElement('div'); flexBtns.className = 'nav-btns';
-    if (flexBranch !== null) {
+    if (flexBranch !== null && window._flexBranchChosen) {
       const flexNext = document.createElement('button'); flexNext.className = 'btn-submit'; flexNext.textContent = 'Siguiente →';
       flexNext.addEventListener('click', function() {
         currentStepIdx = 1; currentView = 'step'; window._scrollToTop = true; renderAll();
@@ -1676,6 +1676,8 @@ function renderMobileProgress() {
     bar.style.display = 'none';
     return;
   }
+  // Only show on mobile (max-width 640px)
+  if (window.innerWidth > 640) { bar.style.display = 'none'; return; }
   bar.style.display = 'flex';
 
   var modelNombre = modeloActivo === 'pro' ? 'Premium' : modeloActivo === 'esencial' ? 'Esencial' : 'Flex';
