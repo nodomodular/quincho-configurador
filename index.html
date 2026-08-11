@@ -871,7 +871,7 @@ function fmt(n) { return '$' + Math.round(n).toLocaleString('es-CL'); }
 // View done check
 function viewDone(i) {
   const v = VIEWS[i]; if (!v) return false;
-  if (v.tipo === 'flex_ventana_choice') return flexBranch !== null;
+  if (v.tipo === 'flex_ventana_choice') return flexBranch !== null && window._flexBranchChosen === true;
   const s = v.step;
   const concepto = s ? (s.concepto || ('paso' + s.paso)) : '';
   if (v.tipo === 'combined') {
@@ -1055,6 +1055,7 @@ function renderStepView(v) {
       card.innerHTML = '<div class="opt-img"><img src="' + imgUrl + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div><div class="opt-body"><div class="opt-name">' + label + '</div></div><div class="opt-check"></div>';
       card.addEventListener('click', function() {
         flexBranch = branch; sel = {};
+        window._flexBranchChosen = true;
         const branchSteps = buildViews(MODEL_DATA['flex_' + branch] || []);
         VIEWS = [{ concepto: 'Ventanas', tipo: 'flex_ventana_choice', step: null }].concat(branchSteps);
         renderAll();
@@ -1617,6 +1618,7 @@ function renderAll() {
 function iniciarModelo(modelo) {
   modeloActivo = modelo; sel = {}; currentStepIdx = 0;
   flexBranch = modelo === 'flex' ? 'ventana' : null;
+  window._flexBranchChosen = false;
   if (modelo === 'flex') {
     const branchSteps = buildViews(MODEL_DATA['flex_ventana'] || []);
     VIEWS = [{ concepto: 'Ventanas', tipo: 'flex_ventana_choice', step: null }].concat(branchSteps);
