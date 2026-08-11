@@ -1164,7 +1164,9 @@ function renderStepView(v) {
     });
     flexBtns.appendChild(flexNext);
     panel.appendChild(flexBtns);
-    main.insertBefore(panel, main.querySelector('.success-panel'));
+    var successPanelFlex = main.querySelector('.success-panel');
+    if (successPanelFlex) main.insertBefore(panel, successPanelFlex);
+    else main.appendChild(panel);
     return;
   }
 
@@ -1794,9 +1796,7 @@ function iniciarModelo(modelo) {
   const nombre = modelo === 'pro' ? 'Premium' : modelo === 'esencial' ? 'Esencial' : 'Flex';
   document.getElementById('sidebar-model-label').textContent = 'Modelo ' + nombre;
   document.getElementById('welcome-badge').textContent = '● Modelo ' + nombre;
-  if (modelo === 'flex') {
-    VIEWS = [{ concepto: 'Ventanas', tipo: 'flex_ventana_choice', step: null }];
-  } else {
+  if (modelo !== 'flex') {
     VIEWS = buildViews(MODEL_DATA[modelo] || []);
   }
   currentView = 'welcome';
