@@ -1150,16 +1150,6 @@ function renderStepView(v) {
     });
     panel.appendChild(grid);
 
-    // Navigation buttons for ventana choice
-    const flexBtns = document.createElement('div'); flexBtns.className = 'nav-btns';
-    if (flexBranch !== null) {
-      const flexNext = document.createElement('button'); flexNext.className = 'btn-submit'; flexNext.textContent = 'Siguiente →';
-      flexNext.addEventListener('click', function() {
-        currentStepIdx = 1; currentView = 'step'; window._scrollToTop = true; renderAll();
-      });
-      flexBtns.appendChild(flexNext);
-    }
-    panel.appendChild(flexBtns);
     main.insertBefore(panel, main.querySelector('.success-panel'));
     return;
   }
