@@ -955,7 +955,7 @@ function fmt(n) { return '$' + Math.round(n).toLocaleString('es-CL'); }
 // View done check
 function viewDone(i) {
   const v = VIEWS[i]; if (!v) return false;
-  if (v.tipo === 'flex_ventana_choice') return flexBranch !== null && window._flexBranchChosen === true;
+  if (v.tipo === 'flex_ventana_choice') return flexBranch !== null;
   const s = v.step;
   const concepto = s ? (s.concepto || ('paso' + s.paso)) : '';
   if (v.tipo === 'combined') {
@@ -1018,7 +1018,9 @@ function renderSidebar() {
     mainRow.style.cssText = 'display:flex;align-items:center;gap:12px;width:100%;';
     mainRow.append(num, lbl);
     // Add "Editar" link for completed steps (not active)
-    if (done && !active) {
+    var isFlexVentana = item.concepto === 'Ventanas';
+    var editAllowed = done && !active && (!isFlexVentana || window._flexBranchChosen);
+    if (editAllowed) {
       var editBtn = document.createElement('span');
       editBtn.textContent = 'Editar';
       editBtn.style.cssText = 'font-size:10px;color:var(--accent);margin-left:auto;letter-spacing:0.03em;cursor:pointer;white-space:nowrap;';
@@ -1780,7 +1782,7 @@ function renderAll() {
 function iniciarModelo(modelo) {
   modeloActivo = modelo; sel = {}; currentStepIdx = 0;
   flexBranch = modelo === 'flex' ? 'ventana' : null;
-  window._flexBranchChosen = false;
+  window._flexBranchChosen = modelo === 'flex' ? true : false;
   if (modelo === 'flex') {
     const branchSteps = buildViews(MODEL_DATA['flex_ventana'] || []);
     VIEWS = [{ concepto: 'Ventanas', tipo: 'flex_ventana_choice', step: null }].concat(branchSteps);
