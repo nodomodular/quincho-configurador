@@ -931,8 +931,19 @@ function renderSidebar() {
     const num = document.createElement('div'); num.className = 'step-num'; num.textContent = done ? '✓' : (si + 1);
     const lbl = document.createElement('span'); lbl.className = 'sidebar-label'; lbl.textContent = item.label;
     var mainRow = document.createElement('div');
-    mainRow.style.cssText = 'display:flex;align-items:center;gap:12px;';
+    mainRow.style.cssText = 'display:flex;align-items:center;gap:12px;width:100%;';
     mainRow.append(num, lbl);
+    // Add "Editar" link for completed steps (not active)
+    if (done && !active) {
+      var editBtn = document.createElement('span');
+      editBtn.textContent = 'Editar';
+      editBtn.style.cssText = 'font-size:10px;color:var(--accent);margin-left:auto;letter-spacing:0.03em;cursor:pointer;white-space:nowrap;';
+      editBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        currentStepIdx = item.firstViewIdx; currentView = 'step'; window._scrollToTop = true; renderAll();
+      });
+      mainRow.appendChild(editBtn);
+    }
     div.appendChild(mainRow);
     // Show sub-steps for Mueblería
     var subViews = itemViews.filter(function(x) { return x.v.subconcepto; });
