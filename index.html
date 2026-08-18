@@ -724,6 +724,7 @@ main { padding: 2.5rem 3rem; max-width: 800px; }
         </div>
         <div class="success-title">¡Todo listo!</div>
         <div class="success-sub">Recibimos tu configuración. Nos contactaremos contigo en menos de 24 hrs para conversar sobre el presupuesto generado.</div>
+        <button class="btn-volver" id="btn-descargar-pdf" style="margin-bottom:0.6rem;">↓ Descargar presupuesto (PDF)</button>
         <button class="btn-volver" id="btn-volver-landing">← Ver otros modelos</button>
       </div>
 
@@ -1651,6 +1652,7 @@ function handleSubmit() {
   }
 
   const payload = { nombre: nombre, email: email, telefono: telefono, calle: calle, comuna: comuna, modelo: modelNombre, precio_total: calcGT(), elecciones: JSON.stringify(elecciones), fecha: new Date().toLocaleString('es-CL') };
+  window._lastPayload = payload;
   const btn = document.getElementById('btn-submit');
   const errEl = document.getElementById('submit-error');
   btn.disabled = true; btn.textContent = 'Enviando…'; errEl.style.display = 'none';
@@ -1679,6 +1681,33 @@ function showSuccess() {
   currentView = 'success';
   document.getElementById('progress-fill').style.width = '100%';
   document.getElementById('hdr-step').textContent = '';
+}
+
+// Descarga el PDF de presupuesto en una pestaña nueva. Se hace con un
+// formulario (no fetch) a propósito: el POST del lead usa mode:'no-cors',
+// así que el navegador nunca podría leer una respuesta con el PDF de esa
+// llamada. Un <form> es una navegación real del navegador, no un fetch,
+// por lo que no tiene restricciones de CORS — el Apps Script responde
+// directo con el archivo y el navegador lo abre/descarga solo.
+function descargarPresupuestoPDF() {
+  const payload = window._lastPayload;
+  if (!payload || !SHEETS_URL) return;
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = SHEETS_URL;
+  form.target = '_blank';
+  form.style.display = 'none';
+  const fields = Object.assign({ accion: 'descargar_pdf' }, payload);
+  Object.keys(fields).forEach(function(key) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = key;
+    input.value = fields[key];
+    form.appendChild(input);
+  });
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
 }
 
 // Render all
@@ -1849,6 +1878,7 @@ document.querySelectorAll('.model-card').forEach(function(card) {
 });
 document.getElementById('btn-cambiar-modelo').addEventListener('click', volverALanding);
 document.getElementById('btn-volver-landing').addEventListener('click', volverALanding);
+document.getElementById('btn-descargar-pdf').addEventListener('click', descargarPresupuestoPDF);
 document.getElementById('btn-welcome-start').addEventListener('click', function() {
   currentStepIdx = 0; currentView = 'step'; window._scrollToTop = true; renderAll();
 });
