@@ -894,10 +894,13 @@ function calcPVD() {
   const precioBase = PRECIOS_COMERCIALES[mkey];
 
   var deltaTotal = 0;
-  var parrillaDelta = 0; // delta sobre mínimo parrilla (0)
+  // La parrilla ya está incluida dentro de precioBase (siempre se suma como
+  // inclusión comercial fija), así que su selección no debe sumar ni restar
+  // nada al total — solo queda registrada como preferencia del cliente.
 
   getSteps().forEach(function(step) {
     const concepto = step.concepto || ('paso' + step.paso);
+    if (concepto === 'Parrilla') return; // no afecta el precio, ver nota arriba
     const minP = mins[concepto] || 0;
 
     if (step.tipo === 'simple') {
@@ -913,11 +916,7 @@ function calcPVD() {
           const ci = sel[concepto + '_col'];
           precio = ci !== undefined ? (opt.colors[ci].precio || 0) : minP;
         }
-        if (concepto === 'Parrilla') {
-          parrillaDelta = precio - 0; // mínimo parrilla es 0 (sin parrilla)
-        } else {
-          deltaTotal += precio - minP;
-        }
+        deltaTotal += precio - minP;
       }
     } else if (step.tipo === 'muebleria') {
       const d = sel['m_dist'] !== undefined ? sel['m_dist'] : 0;
@@ -937,7 +936,7 @@ function calcPVD() {
 
   // deltaTotal ya viene calculado en su valor final
   // (precios pre-procesados en Python); solo queda sumar y redondear una vez.
-  return precioBase + Math.round(deltaTotal) + parrillaDelta;
+  return precioBase + Math.round(deltaTotal);
 }
 
 function updatePVD() {
